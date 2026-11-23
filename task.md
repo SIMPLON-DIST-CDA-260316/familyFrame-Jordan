@@ -8,9 +8,9 @@
 - [x] T02 — Créer le formulaire React
   - pseudo + `<input type="file" accept="image/*" capture>`, aperçu, états envoi / succès / erreur, bouton désactivé pendant l'envoi
   - proxy Vite `/api` et `/socket.io`, `server.host: true`
-- [ ] T03 — Créer l'API Express
+- [x] T03 — Créer l'API Express
   - Express 5 sur `http.Server`, gestionnaire d'erreurs JSON `{ error }`
-- [ ] T04 — Recevoir et traiter les images
+- [x] T04 — Recevoir et traiter les images
   - Multer (mémoire, 10 Mo, 1 fichier, `image/*`), validation du pseudo
   - Sharp : liste blanche de formats (SVG refusé), `autoOrient`, 1920 px max, JPEG
   - test `node --test` du traitement : image valide, fichier corrompu, SVG refusé

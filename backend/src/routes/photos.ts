@@ -1,0 +1,40 @@
+import { Router, type ErrorRequestHandler } from 'express'
+import multer from 'multer'
+import { httpError } from '../lib/http-error.ts'
+import { processImage } from '../lib/image.ts'
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+const PSEUDO_MAX_LENGTH = 30
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE, files: 1, fields: 1, fieldSize: 1024 },
+  // Pré-filtre seulement : le mimetype est déclaré par le client, Sharp vérifie le vrai contenu.
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true)
+    else cb(httpError(415, 'Le fichier envoyé n’est pas une image.'))
+  },
+})
+
+export const photosRouter = Router()
+
+photosRouter.post('/', upload.single('photo'), async (req, res) => {
+  const pseudo = typeof req.body?.pseudo === 'string' ? req.body.pseudo.trim() : ''
+  if (!pseudo || pseudo.length > PSEUDO_MAX_LENGTH) {
+    throw httpError(400, `Le pseudo est obligatoire (${PSEUDO_MAX_LENGTH} caractères maximum).`)
+  }
+  if (!req.file) throw httpError(400, 'Aucune photo reçue.')
+
+  const image = await processImage(req.file.buffer)
+
+  // Réponse temporaire : remplacée par l'upload Cloudinary en T05.
+  res.json({ pseudo, bytes: image.length })
+})
+
+// Traduit les erreurs Multer (messages en anglais, sans code HTTP) avant le gestionnaire global.
+const multerErrors: ErrorRequestHandler = (err, _req, _res, next) => {
+  if (!(err instanceof multer.MulterError)) return next(err)
+  if (err.code === 'LIMIT_FILE_SIZE') return next(httpError(413, 'Photo trop lourde (10 Mo maximum).'))
+  next(httpError(400, 'Requête invalide : un pseudo et une seule photo sont attendus.'))
+}
+photosRouter.use(multerErrors)

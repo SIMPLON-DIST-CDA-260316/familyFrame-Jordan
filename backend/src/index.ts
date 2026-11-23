@@ -1,12 +1,13 @@
 import { createServer } from 'node:http'
 import express, { type ErrorRequestHandler } from 'express'
+import { photosRouter } from './routes/photos.ts'
 
 const port = Number(process.env.PORT ?? 3000)
 
 const app = express()
 app.disable('x-powered-by')
 
-// Les routes /api seront ajoutées ici (T04 à T07).
+app.use('/api/photos', photosRouter)
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route introuvable.' })
