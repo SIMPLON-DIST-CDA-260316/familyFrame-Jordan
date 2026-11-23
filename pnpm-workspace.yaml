@@ -1,0 +1,9 @@
+packages:
+  - frontend
+  - backend
+
+# pnpm bloque les scripts d'installation par défaut : on autorise seulement ceux de Prisma (génération du client, moteurs).
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
