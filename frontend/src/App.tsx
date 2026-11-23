@@ -1,122 +1,113 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+type Status =
+  | { type: 'idle' }
+  | { type: 'sending' }
+  | { type: 'success' }
+  | { type: 'error'; message: string }
+
+export default function App() {
+  const [pseudo, setPseudo] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [status, setStatus] = useState<Status>({ type: 'idle' })
+
+  function showPreview(next: File | null) {
+    if (preview) URL.revokeObjectURL(preview)
+    setFile(next)
+    setPreview(next ? URL.createObjectURL(next) : null)
+  }
+
+  function handleFile(event: ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0]
+    event.target.value = '' // permet de resélectionner la même image
+    if (!selected) return
+    showPreview(selected)
+    setStatus({ type: 'idle' })
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!file) return
+    setStatus({ type: 'sending' })
+
+    const body = new FormData()
+    // Le pseudo avant le fichier : Multer ne remplit req.body qu'avec les champs déjà reçus
+    body.append('pseudo', pseudo.trim())
+    body.append('photo', file)
+
+    try {
+      const response = await fetch('/api/photos', { method: 'POST', body })
+      if (!response.ok) {
+        const data: { error?: string } | null = await response.json().catch(() => null)
+        throw new Error(data?.error ?? `Erreur du serveur (${response.status})`)
+      }
+      showPreview(null)
+      setStatus({ type: 'success' })
+    } catch (error) {
+      const message =
+        error instanceof TypeError
+          ? 'Serveur injoignable, vérifiez votre connexion.'
+          : (error as Error).message
+      setStatus({ type: 'error', message })
+    }
+  }
+
+  const sending = status.type === 'sending'
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="send">
+      <h1>FamilyFrame</h1>
+      <p>Envoyez une photo, elle apparaît aussitôt sur le cadre.</p>
+
+      <form onSubmit={handleSubmit}>
+        <label className="field">
+          Votre pseudo
+          <input
+            value={pseudo}
+            onChange={(event) => setPseudo(event.target.value)}
+            required
+            maxLength={30}
+            autoComplete="nickname"
+            disabled={sending}
+          />
+        </label>
+
+        <div className="pickers">
+          <label className="button">
+            📷 Prendre une photo
+            <input
+              className="visually-hidden"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFile}
+              disabled={sending}
+            />
+          </label>
+          <label className="button secondary">
+            🖼️ Choisir une image
+            <input
+              className="visually-hidden"
+              type="file"
+              accept="image/*"
+              onChange={handleFile}
+              disabled={sending}
+            />
+          </label>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+
+        {preview && <img className="preview" src={preview} alt="Aperçu de la photo à envoyer" />}
+
+        <button type="submit" className="button" disabled={!file || !pseudo.trim() || sending}>
+          {sending ? 'Envoi en cours…' : 'Envoyer'}
         </button>
-      </section>
+      </form>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <p role="status" className={`status ${status.type}`}>
+        {status.type === 'success' && 'Photo envoyée ! 🎉'}
+        {status.type === 'error' && status.message}
+      </p>
+    </main>
   )
 }
-
-export default App
