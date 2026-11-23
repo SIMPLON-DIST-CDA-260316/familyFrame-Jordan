@@ -54,6 +54,25 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
   res.status(201).json(photo)
 })
 
+// shortcut: aucune protection, tout visiteur peut supprimer (choix du POC) ; ajouter un jeton d'expéditeur avant toute mise en ligne.
+photosRouter.delete('/:id', async (req, res) => {
+  const { id } = req.params
+  if (!/^[a-f\d]{24}$/i.test(id)) throw httpError(400, 'Identifiant de photo invalide.')
+
+  const photo = await prisma.photo.delete({ where: { id } }).catch((error) => {
+    if (error?.code === 'P2025') throw httpError(404, 'Photo introuvable.') // P2025 : enregistrement inexistant
+    throw error
+  })
+
+  // Base d'abord : si Cloudinary échoue, il reste un fichier orphelin invisible plutôt qu'une photo cassée sur le mur
+  await deleteImage(photo.publicId).catch((error) =>
+    console.error(`Suppression Cloudinary impossible pour ${photo.publicId}`, error),
+  )
+
+  io.emit('photo:deleted', photo.id)
+  res.status(204).end()
+})
+
 // Traduit les erreurs Multer (messages en anglais, sans code HTTP) avant le gestionnaire global.
 const multerErrors: ErrorRequestHandler = (err, _req, _res, next) => {
   if (!(err instanceof multer.MulterError)) return next(err)

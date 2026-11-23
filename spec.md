@@ -32,8 +32,11 @@ pseudo + photo ──POST /api/photos──► Multer (mémoire, 10 Mo, 1 fichie
 |---|---|---|---|
 | POST | `/api/photos` | multipart : `photo` (fichier), `pseudo` (texte) | `201` + photo créée |
 | GET | `/api/photos?limit=N` | — | photos, plus récente en premier |
+| DELETE | `/api/photos/:id` | — | `204` (base puis Cloudinary), `404` si inconnue |
 
-Événement Socket.IO (serveur → clients) : `photo:new` avec la photo créée.
+Événements Socket.IO (serveur → clients) : `photo:new` avec la photo créée, `photo:deleted` avec l'identifiant supprimé.
+
+Suppression ouverte à tout visiteur (pas d'authentification dans le POC), bouton masqué en mode `?cadre`.
 
 Erreurs : JSON `{ error }` — `400` (pseudo ou fichier manquant/invalide), `413` (trop lourd), `415` (format refusé), `500`.
 

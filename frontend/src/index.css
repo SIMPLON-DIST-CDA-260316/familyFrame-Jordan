@@ -219,6 +219,46 @@ body {
   animation: stamp 7s ease-out 0.6s both;
 }
 
+/* Bouton de suppression, en coin de la photo principale (absent en mode cadre) */
+.delete {
+  position: absolute;
+  top: -1rem;
+  left: -1rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid var(--red);
+  border-radius: 50%;
+  background: var(--paper);
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.85;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  transition:
+    scale 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.delete:hover {
+  scale: 1.1;
+  opacity: 1;
+}
+
+.delete:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* Fenêtre de confirmation : centrée, réutilise le style du panneau d'envoi */
+.send-panel.confirm {
+  margin: auto;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 /* ---------- Ambiance : guirlande et neige ---------- */
 
 .garland {

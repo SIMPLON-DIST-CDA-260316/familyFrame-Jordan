@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import DeleteDialog from './DeleteDialog.tsx'
 import { seed, sized } from './photos.ts'
 import SendPanel from './SendPanel.tsx'
+import type { Photo } from './types.ts'
 import { usePhotos } from './usePhotos.ts'
 
 // Emplacements du décor autour de la photo principale (en % de l'écran, profondeur en px).
@@ -39,6 +41,7 @@ export default function App() {
   const { photos, connected, arrivedId } = usePhotos()
   const [focus, setFocus] = useState<Focus | null>(null)
   const [loadedId, setLoadedId] = useState<string | null>(null)
+  const [toDelete, setToDelete] = useState<Photo | null>(null)
   const sceneRef = useRef<HTMLDivElement>(null)
 
   // Une ancienne photo agrandie revient au décor après quelques secondes
@@ -120,6 +123,16 @@ export default function App() {
               <time dateTime={main.createdAt}>{dateFormat.format(new Date(main.createdAt))}</time>
             </figcaption>
             {main.id === arrivedId && !focusedId && <span className="stamp">Nouvelle photo !</span>}
+            {!frameMode && (
+              <button
+                type="button"
+                className="delete"
+                onClick={() => setToDelete(main)}
+                aria-label={`Supprimer la photo de ${main.pseudo}`}
+              >
+                🗑️
+              </button>
+            )}
           </figure>
         ) : (
           <figure className="polaroid main-photo is-loaded is-empty">
@@ -149,6 +162,7 @@ export default function App() {
       )}
 
       {!frameMode && <SendPanel />}
+      {!frameMode && <DeleteDialog photo={toDelete} onClose={() => setToDelete(null)} />}
     </main>
   )
 }

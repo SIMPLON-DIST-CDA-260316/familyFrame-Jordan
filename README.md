@@ -72,8 +72,11 @@ pnpm dev                                  # lance le backend (:3000) et le front
 |---|---|---|---|
 | POST | `/api/photos` | multipart : `pseudo` (1 à 30 caractères) puis `photo` (fichier) | `201` + la photo enregistrée |
 | GET | `/api/photos?limit=N` | `N` entier de 1 à 100 (20 par défaut) | photos, la plus récente en premier |
+| DELETE | `/api/photos/:id` | identifiant MongoDB (24 caractères hexadécimaux) | `204` (supprimée en base puis sur Cloudinary), `404` si inconnue |
 
-Événement Socket.IO (serveur → clients) : `photo:new` avec la photo enregistrée.
+Événements Socket.IO (serveur → clients) : `photo:new` avec la photo enregistrée, `photo:deleted` avec l'identifiant supprimé.
+
+⚠️ Sans authentification (choix du POC), toute personne qui accède à la page peut supprimer une photo. Le bouton n'apparaît pas en mode `?cadre`.
 Erreurs : JSON `{ "error": "…" }` avec `400`, `413` (trop lourd), `415` (format refusé) ou `500`.
 
 ## Dépannage
