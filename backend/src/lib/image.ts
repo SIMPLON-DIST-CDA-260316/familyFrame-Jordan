@@ -2,6 +2,7 @@ import sharp from 'sharp'
 import { httpError } from './http-error.ts'
 
 // AVIF est signalé par Sharp comme 'heif' (compression av1). SVG, GIF, TIFF… sont refusés.
+// shortcut: pas de décodage HEIC (HEVC), passer par une conversion côté client ou un libvips compilé avec HEVC si besoin réel.
 const ALLOWED_FORMATS = new Set(['jpeg', 'png', 'webp', 'heif'])
 // Couvre les capteurs 48 Mpx des smartphones ; au-delà, risque de saturer la mémoire au décodage.
 export const MAX_PIXELS = 50_000_000
@@ -22,7 +23,14 @@ export async function processImage(input: Buffer): Promise<Buffer> {
     })
 
   if (!ALLOWED_FORMATS.has(metadata.format)) {
-    throw httpError(415, 'Format non pris en charge (JPEG, PNG, WebP, HEIF ou AVIF).')
+    throw httpError(415, 'Format non pris en charge (JPEG, PNG, WebP ou AVIF).')
+  }
+  // Les binaires précompilés de Sharp ne décodent pas le HEVC (HEIC des iPhone), seulement l'AVIF
+  if (metadata.compression === 'hevc') {
+    throw httpError(
+      415,
+      'Photo HEIC non prise en charge : envoyez un JPEG (iPhone : Réglages › Appareil photo › Formats › « Le plus compatible »).',
+    )
   }
   if (metadata.width * metadata.height > MAX_PIXELS) {
     throw httpError(413, 'Image trop grande (50 mégapixels maximum).')
