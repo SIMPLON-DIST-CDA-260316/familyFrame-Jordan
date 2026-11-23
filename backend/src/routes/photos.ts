@@ -20,6 +20,15 @@ const upload = multer({
 
 export const photosRouter = Router()
 
+photosRouter.get('/', async (req, res) => {
+  const limit = Number(req.query.limit ?? 20)
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw httpError(400, 'Le paramètre limit doit être un entier entre 1 et 100.')
+  }
+  const photos = await prisma.photo.findMany({ orderBy: { createdAt: 'desc' }, take: limit })
+  res.json(photos)
+})
+
 photosRouter.post('/', upload.single('photo'), async (req, res) => {
   const pseudo = typeof req.body?.pseudo === 'string' ? req.body.pseudo.trim() : ''
   if (!pseudo || pseudo.length > PSEUDO_MAX_LENGTH) {

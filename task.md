@@ -19,7 +19,7 @@
 - [x] T06 — Connecter MongoDB avec Prisma
   - Prisma `6.19.3` figé, modèle `Photo`, `prisma db push`, client unique
   - si l'enregistrement échoue, supprimer l'image Cloudinary
-- [ ] T07 — Créer la route GET /api/photos
+- [x] T07 — Créer la route GET /api/photos
   - `?limit=N`, plus récente en premier
 - [ ] T08 — Intégrer Socket.IO
   - `io.emit('photo:new', photo)` après l'enregistrement
