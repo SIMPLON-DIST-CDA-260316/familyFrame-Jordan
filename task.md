@@ -14,7 +14,7 @@
   - Multer (mémoire, 10 Mo, 1 fichier, `image/*`), validation du pseudo
   - Sharp : liste blanche de formats (SVG refusé), `autoOrient`, 1920 px max, JPEG
   - test `node --test` du traitement : image valide, fichier corrompu, SVG refusé
-- [ ] T05 — Intégrer Cloudinary
+- [x] T05 — Intégrer Cloudinary
   - `upload_stream` depuis le buffer Sharp, configuration par `CLOUDINARY_URL`
 - [ ] T06 — Connecter MongoDB avec Prisma
   - Prisma `6.19.3` figé, modèle `Photo`, `prisma db push`, client unique

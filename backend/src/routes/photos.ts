@@ -1,5 +1,6 @@
 import { Router, type ErrorRequestHandler } from 'express'
 import multer from 'multer'
+import { uploadImage } from '../lib/cloudinary.ts'
 import { httpError } from '../lib/http-error.ts'
 import { processImage } from '../lib/image.ts'
 
@@ -26,9 +27,10 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
   if (!req.file) throw httpError(400, 'Aucune photo reçue.')
 
   const image = await processImage(req.file.buffer)
+  const uploaded = await uploadImage(image)
 
-  // Réponse temporaire : remplacée par l'upload Cloudinary en T05.
-  res.json({ pseudo, bytes: image.length })
+  // Réponse temporaire : l'enregistrement MongoDB arrive en T06.
+  res.status(201).json({ pseudo, url: uploaded.secure_url, publicId: uploaded.public_id })
 })
 
 // Traduit les erreurs Multer (messages en anglais, sans code HTTP) avant le gestionnaire global.
