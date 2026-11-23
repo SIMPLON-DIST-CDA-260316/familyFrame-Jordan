@@ -16,7 +16,7 @@
   - test `node --test` du traitement : image valide, fichier corrompu, SVG refusé
 - [x] T05 — Intégrer Cloudinary
   - `upload_stream` depuis le buffer Sharp, configuration par `CLOUDINARY_URL`
-- [ ] T06 — Connecter MongoDB avec Prisma
+- [x] T06 — Connecter MongoDB avec Prisma
   - Prisma `6.19.3` figé, modèle `Photo`, `prisma db push`, client unique
   - si l'enregistrement échoue, supprimer l'image Cloudinary
 - [ ] T07 — Créer la route GET /api/photos

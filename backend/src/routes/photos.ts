@@ -1,8 +1,9 @@
 import { Router, type ErrorRequestHandler } from 'express'
 import multer from 'multer'
-import { uploadImage } from '../lib/cloudinary.ts'
+import { deleteImage, uploadImage } from '../lib/cloudinary.ts'
 import { httpError } from '../lib/http-error.ts'
 import { processImage } from '../lib/image.ts'
+import { prisma } from '../lib/prisma.ts'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const PSEUDO_MAX_LENGTH = 30
@@ -29,8 +30,18 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
   const image = await processImage(req.file.buffer)
   const uploaded = await uploadImage(image)
 
-  // Réponse temporaire : l'enregistrement MongoDB arrive en T06.
-  res.status(201).json({ pseudo, url: uploaded.secure_url, publicId: uploaded.public_id })
+  try {
+    const photo = await prisma.photo.create({
+      data: { url: uploaded.secure_url, publicId: uploaded.public_id, pseudo },
+    })
+    res.status(201).json(photo)
+  } catch (error) {
+    // Pas d'image orpheline sur Cloudinary si la base refuse l'enregistrement
+    await deleteImage(uploaded.public_id).catch((cleanupError) =>
+      console.error(`Suppression Cloudinary impossible pour ${uploaded.public_id}`, cleanupError),
+    )
+    throw error
+  }
 })
 
 // Traduit les erreurs Multer (messages en anglais, sans code HTTP) avant le gestionnaire global.

@@ -16,3 +16,8 @@ export function uploadImage(image: Buffer): Promise<UploadApiResponse> {
       .end(image)
   })
 }
+
+/** Supprime une image de Cloudinary (utilisé si l'enregistrement en base échoue). */
+export async function deleteImage(publicId: string): Promise<void> {
+  await cloudinary.uploader.destroy(publicId, { resource_type: 'image', invalidate: true })
+}

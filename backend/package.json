@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "node --watch --env-file=.env src/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --test",
+    "db:push": "prisma db push",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
