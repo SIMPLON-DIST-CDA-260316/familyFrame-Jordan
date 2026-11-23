@@ -23,12 +23,16 @@
   - `?limit=N`, plus récente en premier
 - [x] T08 — Intégrer Socket.IO
   - `io.emit('photo:new', photo)` après l'enregistrement
-- [ ] T09 — Afficher la dernière photo
+- [x] T09 — Afficher la dernière photo
   - `frame.html` : chargement initial via GET, mise à jour en temps réel, pseudo affiché, plein écran, reconnexion
 - [ ] T10 — Tester le parcours complet
   - envoi depuis un smartphone sur le réseau local (vérifier le cas HEIC iPhone)
   - vérifier l'image dans Cloudinary et le document dans Atlas
   - README de démarrage
+- [ ] T11 — Refonte UI (J5, après T10)
+  - accueil = cadre : dernière photo au premier plan, anciennes photos dispersées en décor (consultables au clic)
+  - formulaire d'envoi dans un panneau ouvert par un bouton flottant (masquable sur l'écran du cadre)
+  - DA « mur de Polaroids de Noël » : 3D et micro-animations en CSS, sans dépendance, respect de `prefers-reduced-motion`
 
 ## Règles
 
