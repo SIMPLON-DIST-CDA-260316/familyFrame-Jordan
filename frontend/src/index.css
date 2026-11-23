@@ -1,14 +1,18 @@
+/* DA « mur de Polaroids de Noël » : mur sombre et chaleureux, papier crème, accents rouge / sapin / or */
 :root {
-  --bg: #fdf8f3;
-  --text: #2b2118;
+  --wall: #160e0a;
+  --wall-light: #3b2619;
+  --paper: #fbf8f1;
+  --ink: #2b2118;
   --muted: #6b5d50;
-  --accent: #b3261e;
-  --accent-text: #fff;
+  --red: #c0392b;
+  --green: #2f6b4f;
+  --gold: #e8b75a;
   --success: #1b6e3a;
+  --hand: 'Caveat Variable', 'Bradley Hand', cursive;
   font-family: system-ui, sans-serif;
   line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--ink);
 }
 
 * {
@@ -17,21 +21,357 @@
 
 body {
   margin: 0;
+  background: var(--wall);
+  overflow: hidden;
 }
 
-.send {
-  max-width: 28rem;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
+/* ---------- Le mur ---------- */
+
+.wall {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 45%, var(--wall-light), var(--wall) 72%);
+  perspective: 1200px;
 }
 
-.send h1 {
+/* Grain de papier, généré en SVG (aucune image à télécharger) */
+.wall::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.wall.is-frame {
+  cursor: none;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.8s ease-out;
+  /* En 3D, ce plan (z = 0) passe devant le décor (z < 0) et capterait ses clics */
+  pointer-events: none;
+}
+
+.scene > * {
+  pointer-events: auto;
+}
+
+/* ---------- Polaroids ---------- */
+
+.polaroid {
+  position: absolute;
   margin: 0;
-  color: var(--accent);
+  background: var(--paper);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.3),
+    0 18px 40px rgb(0 0 0 / 0.45);
 }
 
-.send p {
+/* Morceau de washi tape semi-transparent en haut */
+.polaroid::before {
+  content: '';
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  width: 38%;
+  height: 1.4rem;
+  translate: -50% 0;
+  rotate: -4deg;
+  background: var(--tape, var(--gold));
+  opacity: 0.75;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+.polaroid img {
+  display: block;
+  background: #e9e3d8;
+}
+
+.caption,
+.polaroid figcaption {
+  font-family: var(--hand);
+  color: var(--ink);
+}
+
+/* Décor : anciennes photos en profondeur, floues, qui se balancent doucement */
+.decor {
+  left: var(--x);
+  top: var(--y);
+  width: clamp(90px, 12vw, 190px);
+  padding: 7px 7px 0; /* pas de % : il serait calculé sur la largeur de l'écran */
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  translate: -50% -50%;
+  rotate: var(--r);
+  transform: translateZ(var(--z));
+  filter: blur(1.5px) brightness(0.65);
+  transition:
+    left 0.8s ease,
+    top 0.8s ease,
+    transform 0.4s ease,
+    filter 0.4s ease;
+  animation:
+    sway 7s ease-in-out var(--delay) infinite alternate,
+    appear 0.8s ease-out both;
+}
+
+.decor img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.decor .caption {
+  display: block;
+  padding: 0.2em 0 0.4em;
+  font-size: clamp(0.9rem, 1.3vw, 1.3rem);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.decor:hover,
+.decor:focus-visible {
+  transform: translateZ(calc(var(--z) + 220px)) scale(1.1);
+  filter: none;
+}
+
+.decor:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* Photo principale : grande, au premier plan, entière (non recadrée) */
+.main-photo {
+  left: 50%;
+  top: 50%;
+  padding: clamp(0.6rem, 1.5vw, 1.2rem) clamp(0.6rem, 1.5vw, 1.2rem) 0;
+  translate: -50% -50%;
+  rotate: -1.5deg;
+  opacity: 0; /* visible une fois l'image chargée, pour éviter un cadre vide qui s'agrandit */
+}
+
+.main-photo.is-loaded {
+  opacity: 1;
+  animation: drop-in 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.main-photo img {
+  max-width: min(78vw, 1000px);
+  max-height: 64vh;
+  width: auto;
+  height: auto;
+}
+
+.main-photo figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.3em 0.2em 0.5em;
+  font-size: clamp(1.4rem, 3vw, 2.6rem);
+  line-height: 1.2;
+}
+
+.main-photo time {
+  font-size: 0.7em;
   color: var(--muted);
+}
+
+.is-empty .placeholder {
+  display: grid;
+  place-items: center;
+  width: min(70vw, 520px);
+  aspect-ratio: 4 / 3;
+  margin-bottom: 3.5rem;
+  padding: 1rem;
+  background: #e9e3d8;
+  font-family: var(--hand);
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Tampon « Nouvelle photo ! » : apparaît puis s'efface tout seul */
+.stamp {
+  position: absolute;
+  top: 1.2rem;
+  right: -1.2rem;
+  padding: 0 0.6rem;
+  rotate: 12deg;
+  border: 3px solid var(--red);
+  border-radius: 6px;
+  background: rgb(251 248 241 / 0.9);
+  color: var(--red);
+  font-family: var(--hand);
+  font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+  font-weight: 700;
+  animation: stamp 7s ease-out 0.6s both;
+}
+
+/* ---------- Ambiance : guirlande et neige ---------- */
+
+.garland {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.garland svg {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  height: 40px;
+}
+
+.garland path {
+  fill: none;
+  stroke: #0b0705;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Ampoules posées sur la courbe du fil (même équation que le tracé SVG) */
+.garland span {
+  position: absolute;
+  left: calc(var(--t) * 100%);
+  top: calc(var(--sag) * 40px);
+  width: 10px;
+  height: 14px;
+  translate: -50% -2px;
+  border-radius: 50% 50% 45% 45%;
+  background: var(--c);
+  box-shadow: 0 0 12px 3px var(--c);
+  animation: twinkle 1.8s ease-in-out var(--delay) infinite alternate;
+}
+
+.flakes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flakes span {
+  position: absolute;
+  top: -10px;
+  left: var(--left);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.6;
+  animation: fall var(--duration) linear var(--delay) infinite;
+}
+
+.offline {
+  position: absolute;
+  top: 4rem;
+  right: 1rem;
+  z-index: 3;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgb(0 0 0 / 0.65);
+  color: var(--paper);
+}
+
+/* ---------- Envoi : bouton flottant + panneau ---------- */
+
+.fab {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 3;
+  padding: 0.9rem 1.3rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.45);
+  animation: pulse 2.6s ease-out infinite;
+  transition: scale 0.2s ease;
+}
+
+.fab:hover {
+  scale: 1.05;
+}
+
+.fab:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.send-panel {
+  width: min(100% - 2rem, 28rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto auto 1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.5);
+}
+
+.send-panel[open] {
+  animation: slide-up 0.35s ease-out;
+}
+
+.send-panel::backdrop {
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.send-inner {
+  position: relative;
+  padding: 1.5rem 1.25rem 1rem;
+}
+
+.send-inner h2 {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 2.2rem;
+  line-height: 1.1;
+  color: var(--red);
+}
+
+.hint {
+  margin: 0.25rem 0 1rem;
+  color: var(--muted);
+}
+
+.close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: rgb(0 0 0 / 0.06);
 }
 
 form {
@@ -50,6 +390,7 @@ form {
   padding: 0.75rem;
   border: 1px solid var(--muted);
   border-radius: 0.5rem;
+  background: #fff;
 }
 
 .pickers {
@@ -63,15 +404,20 @@ form {
   font-weight: 600;
   text-align: center;
   padding: 0.75rem;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--red);
   border-radius: 0.5rem;
-  color: var(--accent-text);
-  background: var(--accent);
+  color: #fff;
+  background: var(--red);
   cursor: pointer;
+  transition: scale 0.15s ease;
+}
+
+.button:active:not(:disabled) {
+  scale: 0.97;
 }
 
 .button.secondary {
-  color: var(--accent);
+  color: var(--red);
   background: transparent;
 }
 
@@ -84,8 +430,9 @@ form {
 /* Les inputs fichier sont masqués visuellement mais restent accessibles au clavier */
 .button:focus-within,
 .button:focus-visible,
-.field input:focus-visible {
-  outline: 3px solid var(--text);
+.field input:focus-visible,
+.close:focus-visible {
+  outline: 3px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -100,9 +447,15 @@ form {
 
 .preview {
   width: 100%;
-  max-height: 50vh;
+  max-height: 40vh;
   object-fit: contain;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
+  background: #e9e3d8;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 0.75rem 0 0;
 }
 
 .status.success {
@@ -110,50 +463,113 @@ form {
 }
 
 .status.error {
-  color: var(--accent);
+  color: var(--red);
 }
 
-/* Cadre : plein écran, fond sombre pour mettre la photo en valeur */
-.frame {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: #111;
-  color: #f5f5f5;
+/* ---------- Animations ---------- */
+
+@keyframes sway {
+  from {
+    rotate: calc(var(--r) - 1.5deg);
+  }
+  to {
+    rotate: calc(var(--r) + 1.5deg);
+  }
 }
 
-.frame figure {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-rows: 1fr auto;
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
 }
 
-.frame img {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  object-fit: contain;
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-45vh) translateZ(200px) rotateX(25deg) rotateZ(-8deg) scale(1.15);
+  }
 }
 
-.frame figcaption {
-  padding: 0.75rem 1rem;
-  text-align: center;
-  font-size: clamp(1rem, 2.5vw, 1.75rem);
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    scale: 2.2;
+  }
+  8% {
+    opacity: 1;
+    scale: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
-.frame-empty {
-  font-size: clamp(1.25rem, 3vw, 2rem);
+@keyframes twinkle {
+  from {
+    opacity: 0.4;
+    box-shadow: 0 0 3px 0 var(--c);
+  }
 }
 
-.frame-offline {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  background: rgb(0 0 0 / 0.6);
+@keyframes fall {
+  to {
+    translate: 3vw 105vh;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow:
+      0 6px 20px rgb(0 0 0 / 0.45),
+      0 0 0 0 rgb(192 57 43 / 0.6);
+  }
+  70%,
+  100% {
+    box-shadow:
+      0 6px 20px rgb(0 0 0 / 0.45),
+      0 0 0 16px rgb(192 57 43 / 0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    translate: 0 2rem;
+  }
+}
+
+/* ---------- Écrans et préférences ---------- */
+
+/* Téléphone : moins de décor pour laisser respirer la photo principale */
+@media (max-width: 700px) {
+  .decor:nth-child(n + 7) {
+    display: none;
+  }
+
+  .main-photo img {
+    max-width: 82vw;
+    max-height: 58vh;
+  }
+}
+
+/* Animations désactivées pour qui l'a demandé dans son système */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .scene {
+    transform: none;
+  }
+
+  .flakes,
+  .stamp {
+    display: none;
+  }
 }

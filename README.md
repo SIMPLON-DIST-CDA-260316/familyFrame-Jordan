@@ -7,7 +7,7 @@ Cadre photo connecté (MVP) : un proche envoie une photo depuis son smartphone, 
 ## Parcours d'une photo
 
 ```
-Smartphone (/)              Backend Express :3000                      Cadre (/frame.html)
+Smartphone (/ › Envoyer)    Backend Express :3000                      Cadre (/?cadre)
 pseudo + photo ──POST /api/photos──► Multer   : mémoire, 10 Mo max, 1 fichier
                                      Sharp    : vérifie le vrai format, décode puis réencode en JPEG
                                                 (redressée, 1920 px max, métadonnées/GPS supprimés)
@@ -16,6 +16,8 @@ pseudo + photo ──POST /api/photos──► Multer   : mémoire, 10 Mo max, 1
                                      Socket.IO : io.emit('photo:new') ──────────► affichage instantané
                             GET /api/photos ◄───────────────────────────────────── dernière photo au (re)chargement
 ```
+
+L'accueil est un mur de Polaroids : la dernière photo au premier plan, les 12 précédentes en décor (cliquer pour agrandir). Animations en CSS, désactivées si le système demande moins d'animations.
 
 En local, Vite (port 5173) sert le frontend et redirige `/api` et `/socket.io` vers le backend : le navigateur ne voit qu'une seule origine.
 
@@ -48,8 +50,8 @@ pnpm dev                                  # lance le backend (:3000) et le front
 
 | Page | URL |
 |---|---|
-| Envoi d'une photo | http://localhost:5173/ |
-| Cadre numérique | http://localhost:5173/frame.html (plein écran : F11) |
+| Mur de photos + bouton « Envoyer une photo » | http://localhost:5173/ |
+| Cadre numérique (sans bouton ni curseur) | http://localhost:5173/?cadre (plein écran : F11) |
 | Depuis un smartphone (même Wi-Fi) | l'adresse **Network** affichée par Vite, ex. `http://192.168.1.x:5173/` |
 
 `backend/.env` contient des secrets : il est ignoré par git et ne doit jamais être commité.
@@ -60,7 +62,7 @@ pnpm dev                                  # lance le backend (:3000) et le front
 |---|---|
 | `pnpm dev` | backend + frontend en mode développement (rechargement automatique) |
 | `pnpm typecheck` | vérification TypeScript des deux paquets |
-| `pnpm --filter backend test` | tests du traitement d'image (`node --test`) |
+| `pnpm test` | tests du traitement d'image (backend) et de la fusion des photos du mur (frontend) |
 | `pnpm --filter backend db:push` | synchronise le schéma Prisma avec MongoDB |
 | `pnpm --filter frontend build` | build de production du frontend |
 

@@ -30,7 +30,7 @@ Consulter la documentation à jour (MCP context7) avant d'utiliser une API d'une
 
 ## Architecture
 
-- frontend/ : application React (Vite multi-page : `index.html` = envoi, `frame.html` = cadre)
+- frontend/ : application React, une seule page : mur de Polaroids + panneau d'envoi (`<dialog>`) ; `/?cadre` masque le bouton d'envoi
 - backend/ : API Express + Socket.IO attaché au `http.Server`
 - En local, le proxy Vite redirige `/api` et `/socket.io` vers le backend (même origine, pas de CORS).
 - Séparation simple des responsabilités

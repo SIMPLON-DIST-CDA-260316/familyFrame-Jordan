@@ -22,5 +22,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Les tests tournent avec node --test (types Node), hors du code navigateur
+  "exclude": ["src/**/*.test.ts"]
 }

@@ -17,7 +17,7 @@ et l'afficher sur un autre écran en temps réel.
 ## Parcours d'une photo
 
 ```
-Smartphone (/)            Backend Express :3000                   Cadre (/frame.html)
+Smartphone (/ › Envoyer)  Backend Express :3000                   Cadre (/?cadre)
 pseudo + photo ──POST /api/photos──► Multer (mémoire, 10 Mo, 1 fichier)
                                      → Sharp (contrôle du format, réencodage JPEG)
                                      → Cloudinary (upload_stream)
