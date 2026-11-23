@@ -1,5 +1,6 @@
 import { createServer } from 'node:http'
 import express, { type ErrorRequestHandler } from 'express'
+import { io } from './lib/socket.ts'
 import { photosRouter } from './routes/photos.ts'
 
 const port = Number(process.env.PORT ?? 3000)
@@ -23,8 +24,9 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
 }
 app.use(errorHandler)
 
-// Serveur HTTP explicite : Socket.IO s'y attachera en T08.
+// Un seul serveur HTTP pour l'API Express et Socket.IO (même port).
 const server = createServer(app)
+io.attach(server)
 server.listen(port, () => {
   console.log(`API prête sur http://localhost:${port}`)
 })

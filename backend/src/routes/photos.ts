@@ -4,6 +4,7 @@ import { deleteImage, uploadImage } from '../lib/cloudinary.ts'
 import { httpError } from '../lib/http-error.ts'
 import { processImage } from '../lib/image.ts'
 import { prisma } from '../lib/prisma.ts'
+import { io } from '../lib/socket.ts'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const PSEUDO_MAX_LENGTH = 30
@@ -39,18 +40,18 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
   const image = await processImage(req.file.buffer)
   const uploaded = await uploadImage(image)
 
-  try {
-    const photo = await prisma.photo.create({
-      data: { url: uploaded.secure_url, publicId: uploaded.public_id, pseudo },
+  const photo = await prisma.photo
+    .create({ data: { url: uploaded.secure_url, publicId: uploaded.public_id, pseudo } })
+    .catch(async (error) => {
+      // Pas d'image orpheline sur Cloudinary si la base refuse l'enregistrement
+      await deleteImage(uploaded.public_id).catch((cleanupError) =>
+        console.error(`Suppression Cloudinary impossible pour ${uploaded.public_id}`, cleanupError),
+      )
+      throw error
     })
-    res.status(201).json(photo)
-  } catch (error) {
-    // Pas d'image orpheline sur Cloudinary si la base refuse l'enregistrement
-    await deleteImage(uploaded.public_id).catch((cleanupError) =>
-      console.error(`Suppression Cloudinary impossible pour ${uploaded.public_id}`, cleanupError),
-    )
-    throw error
-  }
+
+  io.emit('photo:new', photo) // tous les cadres connectés l'affichent sans rechargement
+  res.status(201).json(photo)
 })
 
 // Traduit les erreurs Multer (messages en anglais, sans code HTTP) avant le gestionnaire global.

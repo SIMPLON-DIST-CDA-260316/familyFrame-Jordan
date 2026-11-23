@@ -21,7 +21,7 @@
   - si l'enregistrement échoue, supprimer l'image Cloudinary
 - [x] T07 — Créer la route GET /api/photos
   - `?limit=N`, plus récente en premier
-- [ ] T08 — Intégrer Socket.IO
+- [x] T08 — Intégrer Socket.IO
   - `io.emit('photo:new', photo)` après l'enregistrement
 - [ ] T09 — Afficher la dernière photo
   - `frame.html` : chargement initial via GET, mise à jour en temps réel, pseudo affiché, plein écran, reconnexion
