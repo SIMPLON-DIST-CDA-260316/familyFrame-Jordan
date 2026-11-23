@@ -1,3 +1,29 @@
-// Point d'entrée du backend : remplacé par le serveur Express en T03.
-const port: number = Number(process.env.PORT ?? 3000);
-console.log(`backend prêt (port ${port})`);
+import { createServer } from 'node:http'
+import express, { type ErrorRequestHandler } from 'express'
+
+const port = Number(process.env.PORT ?? 3000)
+
+const app = express()
+app.disable('x-powered-by')
+
+// Les routes /api seront ajoutées ici (T04 à T07).
+
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Route introuvable.' })
+})
+
+// Express 5 transmet aussi ici les erreurs des handlers async (promesses rejetées).
+const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
+  if (res.headersSent) return next(err)
+  const status = Number.isInteger(err?.status) && err.status >= 400 && err.status < 500 ? err.status : 500
+  if (status === 500) console.error(err)
+  // Le détail des erreurs internes reste dans les logs, jamais dans la réponse
+  res.status(status).json({ error: status === 500 ? 'Erreur interne du serveur.' : err.message })
+}
+app.use(errorHandler)
+
+// Serveur HTTP explicite : Socket.IO s'y attachera en T08.
+const server = createServer(app)
+server.listen(port, () => {
+  console.log(`API prête sur http://localhost:${port}`)
+})
