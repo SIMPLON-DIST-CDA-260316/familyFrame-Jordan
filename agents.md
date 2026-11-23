@@ -70,6 +70,7 @@ Après chaque tâche :
 - Indiquer comment tester.
 - Exécuter les tests disponibles (`pnpm typecheck`, `node --test`).
 - Signaler ce qui reste à vérifier.
+- Rappeler de commiter (un commit atomique par tâche) et proposer le message au format Conventional Commits, ex. `feat(T03): …`.
 
 ## Interdictions
 

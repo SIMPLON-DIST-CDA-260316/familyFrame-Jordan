@@ -5,7 +5,7 @@
   - workspace pnpm, `.gitignore`, `backend/.env.example`, `tsconfig.json`, scripts `dev` et `typecheck`
   - autoriser les scripts de build pnpm de Prisma (`allowBuilds`) — Sharp utilise des binaires précompilés, rien à autoriser
   - vérifier : `pnpm install` et `pnpm typecheck` passent
-- [ ] T02 — Créer le formulaire React
+- [x] T02 — Créer le formulaire React
   - pseudo + `<input type="file" accept="image/*" capture>`, aperçu, états envoi / succès / erreur, bouton désactivé pendant l'envoi
   - proxy Vite `/api` et `/socket.io`, `server.host: true`
 - [ ] T03 — Créer l'API Express
