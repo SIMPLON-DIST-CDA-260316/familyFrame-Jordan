@@ -1,0 +1,54 @@
+services:
+  database:
+    image: mongo:8.0.38
+    command: ["--replSet", "rs0"]
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "try { rs.status() } catch { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'database:27017' }] }) } quit(db.hello().isWritablePrimary ? 0 : 1)",
+        ]
+      interval: 5s
+      start_period: 20s
+      start_interval: 1s
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: backend/.env
+    environment:
+      DATABASE_URL: mongodb://database:27017/familyframe?replicaSet=rs0
+      # HOST_IP (fichier .env à la racine) : adresse du PC sur le Wi-Fi, pour ouvrir l'app depuis un smartphone
+      CORS_ORIGIN: http://${HOST_IP:-localhost}:5173
+    ports:
+      - "3000:3000"
+    networks:
+      - backend
+    depends_on:
+      database:
+        condition: service_healthy
+    command: ["sh", "-c", "pnpm db:push && pnpm start"]
+
+  front:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      # Adresse utilisée par le navigateur (pas par Docker) : le port publié par api sur le PC
+      VITE_API_URL: http://${HOST_IP:-localhost}:3000
+    ports:
+      - "5173:5173"
+
+volumes:
+  mongo-data:
+
+networks:
+  backend:
