@@ -36,8 +36,9 @@ Navigateur (PC ou smartphone)
 ## Prérequis
 
 - **Docker** avec Docker Compose
+- **make** (sur Arch : paquet `base-devel`, sur Debian/Ubuntu : `build-essential`)
 - Un compte **Cloudinary** (gratuit)
-- Facultatif, pour `pnpm typecheck` et `pnpm test` hors Docker : **Node.js 26** et **pnpm 12** (version fixée par `packageManager`, installée par `corepack enable`)
+- Facultatif, pour `pnpm typecheck` et `pnpm test` hors Docker : **Node.js 26** et **pnpm 12**. Node 26 ne fournit plus corepack : `npm install -g corepack && corepack enable` (installe la version de pnpm fixée par `packageManager`), puis `pnpm install`
 
 ### Cloudinary
 1. Créer un compte, puis ouvrir **Settings › API Keys** dans la console.
@@ -49,6 +50,8 @@ Navigateur (PC ou smartphone)
 cp backend/.env.example backend/.env    # puis renseigner CLOUDINARY_URL
 make dev                                # construit les images et lance database, api et front
 ```
+
+Le premier lancement télécharge les images et installe les dépendances (quelques minutes). Ensuite, l'API met quelques secondes à répondre après « Started » : elle crée d'abord les index de la base (`prisma db push`).
 
 | Mode | Commande | Fichiers chargés | Différences |
 |---|---|---|---|
