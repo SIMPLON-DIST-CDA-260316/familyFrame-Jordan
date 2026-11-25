@@ -1,0 +1,11 @@
+# Ajouts du dev, fusionnés par-dessus compose.yaml (make dev) : hot reload via le code source monté depuis l'hôte.
+# Seuls les dossiers src sont montés : les node_modules de l'image (compilés pour Alpine) restent intacts.
+services:
+  api:
+    command: ["sh", "-c", "pnpm db:push && pnpm dev"]
+    volumes:
+      - ./backend/src:/app/backend/src:ro
+
+  front:
+    volumes:
+      - ./frontend/src:/app/frontend/src:ro

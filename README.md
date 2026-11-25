@@ -47,8 +47,15 @@ Navigateur (PC ou smartphone)
 
 ```bash
 cp backend/.env.example backend/.env    # puis renseigner CLOUDINARY_URL
-docker compose up -d --build            # construit les images et lance database, api et front
+make dev                                # construit les images et lance database, api et front
 ```
+
+| Mode | Commande | Fichiers chargés | Différences |
+|---|---|---|---|
+| Dev | `make dev` | `compose.yaml` + `compose.dev.yaml` | hot reload : `src/` monté depuis l'hôte, API relancée par `node --watch` |
+| Prod | `make prod` | `compose.yaml` | code figé dans l'image, API en `pnpm start` (le front reste pour l'instant le serveur de dev Vite) |
+
+Les deux modes partagent la même base (volume `mongo-data`). Le hot reload ne couvre que `backend/src` et `frontend/src` : après un changement de `package.json`, `schema.prisma`, `vite.config.ts`, `index.html` ou `public/`, relancer `make dev` (rebuild).
 
 | Page | URL |
 |---|---|
@@ -64,7 +71,7 @@ Le navigateur du téléphone doit joindre l'API par l'adresse du PC, pas par `lo
 ```bash
 ip -4 addr          # trouver l'adresse du PC sur le Wi-Fi, ex. 192.168.1.20
 echo "HOST_IP=192.168.1.20" > .env      # .env à la racine, lu par Docker Compose
-docker compose up -d                    # recrée api et front avec cette adresse
+make dev                                # recrée api et front avec cette adresse
 ```
 
 Ouvrir ensuite `http://192.168.1.20:5173/` **sur le téléphone comme sur le PC** : l'API n'autorise qu'une seule origine (CORS). Supprimer `.env` pour revenir à `localhost`.
@@ -73,10 +80,10 @@ Ouvrir ensuite `http://192.168.1.20:5173/` **sur le téléphone comme sur le PC*
 
 | Commande | Rôle |
 |---|---|
-| `docker compose up -d --build` | (re)construit les images et lance les services |
+| `make dev` / `make prod` | (re)construit les images et lance les services (voir Démarrage) |
+| `make logs` | logs de tous les services en continu (`docker compose logs -f api` pour l'API seule) |
+| `make down` | arrête et supprime les conteneurs ; les photos restent dans le volume |
 | `docker compose ps` | état des services (`database` doit être `healthy`) |
-| `docker compose logs -f api` | logs de l'API en continu |
-| `docker compose down` | arrête et supprime les conteneurs ; les photos restent dans le volume |
 | `docker compose down -v` | ⚠️ supprime aussi le volume : **toutes les photos en base sont perdues** |
 | `docker compose exec database mongosh familyframe` | console MongoDB (ex. `db.Photo.find()`) |
 | `pnpm typecheck` | vérification TypeScript des deux paquets |
