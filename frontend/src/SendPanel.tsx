@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
+import { API_URL } from './api.ts'
 
 type Status =
   | { type: 'idle' }
@@ -54,7 +55,7 @@ export default function SendPanel() {
     body.append('photo', file)
 
     try {
-      const response = await fetch('/api/photos', { method: 'POST', body })
+      const response = await fetch(`${API_URL}/api/photos`, { method: 'POST', body })
       if (!response.ok) {
         const data: { error?: string } | null = await response.json().catch(() => null)
         throw new Error(data?.error ?? `Erreur du serveur (${response.status})`)

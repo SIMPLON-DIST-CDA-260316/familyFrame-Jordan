@@ -8,7 +8,10 @@ type ServerToClientEvents = {
 }
 
 // Créé ici pour être importé par les routes, attaché au serveur HTTP dans index.ts.
-export const io = new Server<Record<string, never>, ServerToClientEvents>()
+const corsOrigin = process.env.CORS_ORIGIN
+export const io = new Server<Record<string, never>, ServerToClientEvents>({
+  cors: corsOrigin ? { origin: corsOrigin } : undefined,
+})
 
 io.on('connection', (socket) => {
   console.log(`Cadre connecté (${socket.id})`)

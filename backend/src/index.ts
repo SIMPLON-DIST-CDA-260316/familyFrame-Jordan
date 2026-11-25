@@ -8,6 +8,17 @@ const port = Number(process.env.PORT ?? 3000)
 const app = express()
 app.disable('x-powered-by')
 
+// Le front (navigateur) et l'API n'ont pas la même origine dans Docker : on autorise celle du front.
+const corsOrigin = process.env.CORS_ORIGIN
+if (corsOrigin) {
+  app.use((req, res, next) => {
+    res.set('Access-Control-Allow-Origin', corsOrigin)
+    if (req.method !== 'OPTIONS') return next()
+    // Requête préalable du navigateur (DELETE n'est pas une requête « simple »)
+    res.set('Access-Control-Allow-Methods', 'GET, POST, DELETE').sendStatus(204)
+  })
+}
+
 app.use('/api/photos', photosRouter)
 
 app.use((_req, res) => {

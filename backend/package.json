@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch --env-file=.env src/index.ts",
+    "start": "node src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test",
     "db:push": "prisma db push",
