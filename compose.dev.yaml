@@ -9,3 +9,16 @@ services:
   front:
     volumes:
       - ./frontend/src:/app/frontend/src:ro
+
+  # Interface web pour consulter la base : http://localhost:8081 (port publié sur 127.0.0.1 seulement, invisible depuis le Wi-Fi)
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://database:27017/?replicaSet=rs0
+    ports:
+      - "127.0.0.1:8081:8081"
+    networks:
+      - backend
+    depends_on:
+      database:
+        condition: service_healthy

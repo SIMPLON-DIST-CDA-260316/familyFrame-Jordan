@@ -61,6 +61,7 @@ Les deux modes partagent la même base (volume `mongo-data`). Le hot reload ne c
 |---|---|
 | Mur de photos + bouton « Envoyer une photo » | http://localhost:5173/ |
 | Cadre numérique (sans bouton ni curseur) | http://localhost:5173/?cadre (plein écran : F11) |
+| Consulter la base (mongo-express, dev uniquement) | http://localhost:8081 — identifiant `admin`, mot de passe `pass` (valeurs par défaut de l'image ; port ouvert seulement sur le PC) |
 
 `backend/.env` contient des secrets : il est ignoré par git et par Docker (jamais copié dans les images), et ne doit jamais être commité.
 

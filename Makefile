@@ -8,11 +8,11 @@ dev:
 prod:
 	$(PROD) up -d --build
 
-# Les photos restent dans le volume mongo-data
+# $(DEV) : connaît tous les services (dont mongo-express), donc arrête aussi bien le dev que la prod. Les photos restent dans le volume mongo-data
 down:
-	docker compose down
+	$(DEV) down
 
 logs:
-	docker compose logs -f
+	$(DEV) logs -f
 
 .PHONY: dev prod down logs
