@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
+import { API_URL } from './api.ts'
 import { mergePhotos, WALL_SIZE } from './photos.ts'
 import type { Photo } from './types.ts'
 
@@ -15,11 +16,11 @@ export function usePhotos() {
   const [arrivedId, setArrivedId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Même origine que la page : le proxy Vite redirige /socket.io vers le backend
-    const socket: Socket<ServerToClientEvents> = io()
+    // Sans API_URL : même origine que la page (proxy Vite)
+    const socket: Socket<ServerToClientEvents> = io(API_URL || undefined)
 
     const refresh = () =>
-      fetch(`/api/photos?limit=${WALL_SIZE}`)
+      fetch(`${API_URL}/api/photos?limit=${WALL_SIZE}`)
         .then((response) => (response.ok ? response.json() : []))
         .then((list: Photo[]) => setPhotos((current) => mergePhotos(current, list)))
         .catch(() => {}) // la reconnexion suivante réessaiera

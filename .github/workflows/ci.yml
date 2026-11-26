@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [dev]
+  # Le job test sert de check obligatoire pour fusionner une PR vers main (règle de protection de la branche)
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # pnpm (version de packageManager) + Node, puis pnpm install --frozen-lockfile (prisma generate compris)
+      - uses: pnpm/setup@v3
+        with:
+          runtime: node@26.13.1
+          cache: true
+          require-lockfile: true
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  publish:
+    needs: test
+    # Uniquement après un push sur dev : une PR est testée mais ne publie rien
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - service: api
+            dockerfile: backend/Dockerfile
+          - service: front
+            dockerfile: frontend/Dockerfile
+            # Inscrite dans le JS au build : l'image publiée appelle l'API sur le PC qui la lance
+            build-args: VITE_API_URL=http://localhost:3000
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Nom en minuscules (exigé par GHCR) et tags : dev + sha-<commit>
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}-${{ matrix.service }}
+          tags: |
+            type=raw,value=dev
+            type=sha
+      # Cible par défaut du Dockerfile = étape de prod
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build-args }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}

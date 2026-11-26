@@ -1,0 +1,32 @@
+# Ajouts du dev, fusionnés par-dessus compose.yaml (chargé automatiquement par docker compose sans -f, donc par make dev) : hot reload via le code source monté depuis l'hôte.
+services:
+  api:
+    build:
+      target: dev
+    volumes:
+      - ./backend/src:/app/backend/src:ro
+
+  front:
+    build:
+      target: dev
+    environment:
+      # Le serveur Vite la lit au démarrage (en prod, elle est fixée au build : build.args de compose.yaml)
+      VITE_API_URL: http://${HOST_IP:-localhost}:3000
+    # !override remplace les ports de compose.yaml au lieu de s'y ajouter (sinon 5173 serait publié deux fois)
+    ports: !override
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/frontend/src:ro
+
+  # Interface web pour consulter la base : http://localhost:8081 (port publié sur 127.0.0.1 seulement, invisible depuis le Wi-Fi)
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://database:27017/?replicaSet=rs0
+    ports:
+      - "127.0.0.1:8081:8081"
+    networks:
+      - backend
+    depends_on:
+      database:
+        condition: service_healthy
