@@ -1,7 +1,8 @@
 # Ajouts du dev, fusionnés par-dessus compose.yaml (chargé automatiquement par docker compose sans -f, donc par make dev) : hot reload via le code source monté depuis l'hôte.
 services:
   api:
-    command: ["sh", "-c", "pnpm db:push && pnpm dev"]
+    build:
+      target: dev
     volumes:
       - ./backend/src:/app/backend/src:ro
 

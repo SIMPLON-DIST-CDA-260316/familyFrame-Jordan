@@ -19,6 +19,22 @@ services:
       start_period: 20s
       start_interval: 1s
 
+  # Service ponctuel : pousse le schéma Prisma (index) dans MongoDB puis s'arrête (sans effet si la base est déjà à jour)
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      # Seule étape qui contient le CLI Prisma (absent de l'image de prod de l'API)
+      target: base
+    command: ["pnpm", "db:push"]
+    environment:
+      DATABASE_URL: mongodb://database:27017/familyframe?replicaSet=rs0
+    networks:
+      - backend
+    depends_on:
+      database:
+        condition: service_healthy
+
   api:
     build:
       context: .
@@ -32,10 +48,10 @@ services:
       - "3000:3000"
     networks:
       - backend
+    # migrate attend déjà que database soit healthy
     depends_on:
-      database:
-        condition: service_healthy
-    command: ["sh", "-c", "pnpm db:push && pnpm start"]
+      migrate:
+        condition: service_completed_successfully
 
   front:
     build:

@@ -21,11 +21,11 @@ L'accueil est un mur de Polaroids : la dernière photo au premier plan, les 12 p
 
 ## Architecture Docker
 
-Quatre services orchestrés par Docker Compose : `front` (Vite en dev, nginx en prod), `api` (Express + Socket.IO), `database` (MongoDB 8 en replica set) et, en dev, `mongo-express`. Le navigateur appelle lui-même le front et l'API ; `front` reste à l'écart du réseau `backend`, que partagent `api`, `database` et, en dev, `mongo-express`.
+Services orchestrés par Docker Compose : `front` (Vite en dev, nginx en prod), `api` (Express + Socket.IO), `database` (MongoDB 8 en replica set), `migrate` (pousse le schéma Prisma puis s'arrête) et, en dev, `mongo-express`. Le navigateur appelle lui-même le front et l'API ; `front` reste à l'écart du réseau `backend`, que partagent les autres services.
 
 **Schémas dev et prod, réseaux, volume et ordre de démarrage : voir [ARCHITECTURE.md](ARCHITECTURE.md).**
 
-Au démarrage, `api` lance `prisma db push` pour créer les index (sans effet s'ils existent déjà).
+À chaque lancement, `migrate` exécute `prisma db push` pour créer les index (sans effet s'ils existent déjà), puis s'arrête ; `api` ne démarre qu'une fois `migrate` terminé avec succès. L'image de prod de l'API ne contient donc pas le CLI Prisma.
 
 ## Prérequis
 
@@ -42,15 +42,15 @@ Au démarrage, `api` lance `prisma db push` pour créer les index (sans effet s'
 
 ```bash
 cp backend/.env.example backend/.env    # puis renseigner CLOUDINARY_URL
-make dev                                # construit les images et lance database, api et front
+make dev                                # construit les images et lance database, migrate, api, front et mongo-express
 ```
 
-Le premier lancement télécharge les images et installe les dépendances (quelques minutes). Ensuite, l'API met quelques secondes à répondre après « Started » : elle crée d'abord les index de la base (`prisma db push`).
+Le premier lancement télécharge les images et installe les dépendances (quelques minutes). `migrate` apparaît ensuite comme `Exited (0)` : c'est normal, il a fini son travail.
 
 | Mode | Commande | Fichiers chargés | Différences |
 |---|---|---|---|
 | Dev | `make dev` (ou `docker compose up -d --build`) | `compose.yaml` + `compose.override.yaml` | hot reload : `src/` monté depuis l'hôte, API relancée par `node --watch`, mongo-express |
-| Prod | `make prod` (ou `docker compose -f compose.yaml up -d --build`) | `compose.yaml` | code figé dans l'image, API en `pnpm start`, front construit (`pnpm build`) et servi par nginx |
+| Prod | `make prod` (ou `docker compose -f compose.yaml up -d --build`) | `compose.yaml` | code figé dans l'image ; API lancée par `node` sans root (ni pnpm, ni CLI Prisma, ni TypeScript) ; front construit (`pnpm build`) et servi par nginx |
 
 Sans `-f`, Docker Compose charge automatiquement `compose.override.yaml` : `docker compose up` lance donc le **dev**. La prod se lance toujours explicitement (`make prod`) ; sur un serveur, on ne copierait pas l'override. Faire `make down` avant de changer de mode.
 
@@ -83,7 +83,7 @@ Ouvrir ensuite `http://192.168.1.20:5173/` **sur le téléphone comme sur le PC*
 | `make dev` / `make prod` | (re)construit les images et lance les services (voir Démarrage) |
 | `make logs` | logs de tous les services en continu (`docker compose logs -f api` pour l'API seule) |
 | `make down` | arrête et supprime les conteneurs ; les photos restent dans le volume |
-| `docker compose ps` | état des services (`database` doit être `healthy`) |
+| `docker compose ps -a` | état des services (`database` doit être `healthy`, `migrate` en `Exited (0)`) |
 | `docker compose down -v` | ⚠️ supprime aussi le volume : **toutes les photos en base sont perdues** |
 | `docker compose exec database mongosh familyframe` | console MongoDB (ex. `db.Photo.find()`) |
 | `pnpm typecheck` | vérification TypeScript des deux paquets |
@@ -106,6 +106,7 @@ Erreurs : JSON `{ "error": "…" }` avec `400`, `413` (trop lourd), `415` (forma
 
 | Symptôme | Cause probable |
 |---|---|
+| `api` ne démarre pas | `migrate` a échoué : `docker compose logs migrate` |
 | `api` s'arrête : `CLOUDINARY_URL manquante` | `backend/.env` absent ou incomplet |
 | `env file backend/.env not found` au lancement | `backend/.env` n'a pas été créé depuis `.env.example` |
 | `database` reste `unhealthy` | voir `docker inspect familyframe-database-1` ; le `host` du `rs.initiate` du healthcheck doit être le nom du service (`database:27017`) |
