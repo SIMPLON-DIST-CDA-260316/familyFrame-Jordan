@@ -21,7 +21,7 @@ L'accueil est un mur de Polaroids : la dernière photo au premier plan, les 12 p
 
 ## Architecture Docker
 
-Quatre services orchestrés par Docker Compose : `front` (Vite), `api` (Express + Socket.IO), `database` (MongoDB 8 en replica set) et, en dev, `mongo-express`. Le navigateur appelle lui-même le front et l'API ; `front` reste à l'écart du réseau `backend`, que partagent `api`, `database` et, en dev, `mongo-express`.
+Quatre services orchestrés par Docker Compose : `front` (Vite en dev, nginx en prod), `api` (Express + Socket.IO), `database` (MongoDB 8 en replica set) et, en dev, `mongo-express`. Le navigateur appelle lui-même le front et l'API ; `front` reste à l'écart du réseau `backend`, que partagent `api`, `database` et, en dev, `mongo-express`.
 
 **Schémas dev et prod, réseaux, volume et ordre de démarrage : voir [ARCHITECTURE.md](ARCHITECTURE.md).**
 
@@ -50,7 +50,7 @@ Le premier lancement télécharge les images et installe les dépendances (quelq
 | Mode | Commande | Fichiers chargés | Différences |
 |---|---|---|---|
 | Dev | `make dev` (ou `docker compose up -d --build`) | `compose.yaml` + `compose.override.yaml` | hot reload : `src/` monté depuis l'hôte, API relancée par `node --watch`, mongo-express |
-| Prod | `make prod` (ou `docker compose -f compose.yaml up -d --build`) | `compose.yaml` | code figé dans l'image, API en `pnpm start` (le front reste pour l'instant le serveur de dev Vite) |
+| Prod | `make prod` (ou `docker compose -f compose.yaml up -d --build`) | `compose.yaml` | code figé dans l'image, API en `pnpm start`, front construit (`pnpm build`) et servi par nginx |
 
 Sans `-f`, Docker Compose charge automatiquement `compose.override.yaml` : `docker compose up` lance donc le **dev**. La prod se lance toujours explicitement (`make prod`) ; sur un serveur, on ne copierait pas l'override. Faire `make down` avant de changer de mode.
 
@@ -74,7 +74,7 @@ echo "HOST_IP=192.168.1.20" > .env      # .env à la racine, lu par Docker Compo
 make dev                                # recrée api et front avec cette adresse
 ```
 
-Ouvrir ensuite `http://192.168.1.20:5173/` **sur le téléphone comme sur le PC** : l'API n'autorise qu'une seule origine (CORS). Supprimer `.env` pour revenir à `localhost`.
+Ouvrir ensuite `http://192.168.1.20:5173/` **sur le téléphone comme sur le PC** : l'API n'autorise qu'une seule origine (CORS). Supprimer `.env` pour revenir à `localhost`. En prod, l'adresse est inscrite dans le JS au build : relancer `make prod` (qui reconstruit) après chaque changement de `HOST_IP`.
 
 ## Commandes utiles
 

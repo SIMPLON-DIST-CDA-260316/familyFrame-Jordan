@@ -41,11 +41,11 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    environment:
-      # Adresse utilisée par le navigateur (pas par Docker) : le port publié par api sur le PC
-      VITE_API_URL: http://${HOST_IP:-localhost}:3000
+      args:
+        # Adresse utilisée par le navigateur (pas par Docker), inscrite dans le JS au build : changer HOST_IP demande un rebuild
+        VITE_API_URL: http://${HOST_IP:-localhost}:3000
     ports:
-      - "5173:5173"
+      - "5173:8080"
 
 volumes:
   mongo-data:

@@ -21,7 +21,7 @@ flowchart LR
 
   subgraph compose["Docker Compose · projet familyframe"]
     subgraph netdefault["réseau default"]
-      front["front<br/>frontend/Dockerfile · Vite (hot reload)<br/>port 5173"]
+      front["front<br/>frontend/Dockerfile (cible dev) · Vite (hot reload)<br/>port 5173"]
     end
     subgraph netbackend["réseau backend"]
       api["api<br/>backend/Dockerfile · node --watch<br/>port 3000"]
@@ -60,7 +60,7 @@ flowchart LR
 
   subgraph compose["Docker Compose · projet familyframe"]
     subgraph netdefault["réseau default"]
-      front["front<br/>frontend/Dockerfile · Vite<br/>port 5173"]
+      front["front<br/>frontend/Dockerfile · nginx non-root<br/>port 5173 → 8080"]
     end
     subgraph netbackend["réseau backend"]
       api["api<br/>backend/Dockerfile · pnpm start<br/>port 3000"]
@@ -81,7 +81,7 @@ flowchart LR
 ```
 
 - **Code figé dans les images** : pas de bind mount ni de mongo-express ; l'API tourne en `pnpm start`.
-- Le front reste pour l'instant le serveur de dev Vite (un vrai build servi par nginx viendra avec l'optimisation des images).
+- **Front construit puis servi par nginx** : `frontend/Dockerfile` est multi-stage ; l'étape `build` lance `pnpm build` et l'image finale (nginx sans root, port 8080 dans le conteneur) ne garde que `dist/`, soit environ 30 Mo au lieu de 756 Mo. `VITE_API_URL` est passée en `build.args` : elle est inscrite dans le JS au build.
 
 ## Commun aux deux modes
 

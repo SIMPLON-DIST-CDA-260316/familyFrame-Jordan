@@ -6,6 +6,14 @@ services:
       - ./backend/src:/app/backend/src:ro
 
   front:
+    build:
+      target: dev
+    environment:
+      # Le serveur Vite la lit au démarrage (en prod, elle est fixée au build : build.args de compose.yaml)
+      VITE_API_URL: http://${HOST_IP:-localhost}:3000
+    # !override remplace les ports de compose.yaml au lieu de s'y ajouter (sinon 5173 serait publié deux fois)
+    ports: !override
+      - "5173:5173"
     volumes:
       - ./frontend/src:/app/frontend/src:ro
 
