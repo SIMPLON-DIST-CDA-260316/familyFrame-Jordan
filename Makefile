@@ -1,4 +1,5 @@
-DEV  = docker compose -f compose.yaml -f compose.dev.yaml
+# Sans -f, docker compose charge compose.yaml + compose.override.yaml (dev) ; avec -f compose.yaml, l'override est ignoré (prod)
+DEV  = docker compose
 PROD = docker compose -f compose.yaml
 
 # Dev : hot reload (code source monté, node --watch pour l'API)
