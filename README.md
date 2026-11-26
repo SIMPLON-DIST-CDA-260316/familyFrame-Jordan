@@ -21,17 +21,11 @@ L'accueil est un mur de Polaroids : la dernière photo au premier plan, les 12 p
 
 ## Architecture Docker
 
-```
-Navigateur (PC ou smartphone)
-   ├── :5173 ──► front     (Vite : sert les fichiers React)
-   └── :3000 ──► api ──[réseau backend]──► database:27017   (aucun port publié)
-```
+Quatre services orchestrés par Docker Compose : `front` (Vite), `api` (Express + Socket.IO), `database` (MongoDB 8 en replica set) et, en dev, `mongo-express`. Le navigateur appelle lui-même le front et l'API ; `front` reste à l'écart du réseau `backend`, que partagent `api`, `database` et, en dev, `mongo-express`.
 
-- Le **navigateur** appelle lui-même l'API : le front ne fait que lui servir les fichiers. `front` n'est donc pas sur le réseau `backend`.
-- **api** joint MongoDB par le nom du service (`database`) sur le réseau Docker `backend`. La base n'est pas accessible depuis l'extérieur.
-- **database** tourne en *replica set* à un seul membre (`rs0`) : Prisma 6 en a besoin pour écrire dans MongoDB. Son healthcheck l'initialise au premier démarrage, et `api` attend qu'il soit prêt.
-- Les photos (métadonnées) sont gardées dans le volume `mongo-data` ; les images elles-mêmes sont sur Cloudinary.
-- Au démarrage, `api` lance `prisma db push` pour créer les index (sans effet s'ils existent déjà).
+**Schémas dev et prod, réseaux, volume et ordre de démarrage : voir [ARCHITECTURE.md](ARCHITECTURE.md).**
+
+Au démarrage, `api` lance `prisma db push` pour créer les index (sans effet s'ils existent déjà).
 
 ## Prérequis
 
@@ -55,8 +49,10 @@ Le premier lancement télécharge les images et installe les dépendances (quelq
 
 | Mode | Commande | Fichiers chargés | Différences |
 |---|---|---|---|
-| Dev | `make dev` | `compose.yaml` + `compose.dev.yaml` | hot reload : `src/` monté depuis l'hôte, API relancée par `node --watch` |
-| Prod | `make prod` | `compose.yaml` | code figé dans l'image, API en `pnpm start` (le front reste pour l'instant le serveur de dev Vite) |
+| Dev | `make dev` (ou `docker compose up -d --build`) | `compose.yaml` + `compose.override.yaml` | hot reload : `src/` monté depuis l'hôte, API relancée par `node --watch`, mongo-express |
+| Prod | `make prod` (ou `docker compose -f compose.yaml up -d --build`) | `compose.yaml` | code figé dans l'image, API en `pnpm start` (le front reste pour l'instant le serveur de dev Vite) |
+
+Sans `-f`, Docker Compose charge automatiquement `compose.override.yaml` : `docker compose up` lance donc le **dev**. La prod se lance toujours explicitement (`make prod`) ; sur un serveur, on ne copierait pas l'override. Faire `make down` avant de changer de mode.
 
 Les deux modes partagent la même base (volume `mongo-data`). Le hot reload ne couvre que `backend/src` et `frontend/src` : après un changement de `package.json`, `schema.prisma`, `vite.config.ts`, `index.html` ou `public/`, relancer `make dev` (rebuild).
 
