@@ -96,3 +96,17 @@ flowchart LR
 - **migrate** utilise l'étape `base` du Dockerfile de l'API, la seule qui contient le CLI Prisma.
 - **Données** : les photos (métadonnées) sont dans le volume `mongo-data`, les images sur Cloudinary.
 - **Depuis un smartphone** : `localhost` devient l'adresse du PC sur le Wi-Fi (`HOST_IP` dans un `.env` à la racine, voir le README).
+
+## CI
+
+```mermaid
+flowchart LR
+  pushdev["push sur dev"] --> test
+  prmain["PR vers main"] --> test
+  test["job test<br/>pnpm typecheck · pnpm test"] -- "réussi, push sur dev" --> publish
+  test -- "échec" --> blocked["fusion vers main bloquée<br/>(protection de branche)"]
+  publish["job publish (api, front)<br/>docker build (cible prod)"] --> ghcr[("GHCR<br/>…/familyframe-jordan-api<br/>…/familyframe-jordan-front<br/>tags dev · sha-commit")]
+```
+
+- Les images sont construites avec les mêmes Dockerfiles que `make prod` (dernière étape = prod).
+- `migrate` n'est pas publié : il sert seulement à `make dev` et `make prod`, qui construisent depuis le code.

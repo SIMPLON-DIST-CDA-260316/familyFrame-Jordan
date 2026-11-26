@@ -1,5 +1,7 @@
 # FamilyFrame
 
+[![CI](https://github.com/SIMPLON-DIST-CDA-260316/familyFrame-Jordan/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/SIMPLON-DIST-CDA-260316/familyFrame-Jordan/actions/workflows/ci.yml)
+
 Cadre photo connecté (MVP) : un proche envoie une photo depuis son smartphone, elle apparaît aussitôt sur le cadre, sans rechargement.
 
 **Stack** : pnpm · React + Vite · Express 5 · Socket.IO · MongoDB 8 + Prisma 6 · Multer + Sharp · Cloudinary · TypeScript (exécuté directement par Node, sans build côté backend) · Docker Compose.
@@ -88,6 +90,24 @@ Ouvrir ensuite `http://192.168.1.20:5173/` **sur le téléphone comme sur le PC*
 | `docker compose exec database mongosh familyframe` | console MongoDB (ex. `db.Photo.find()`) |
 | `pnpm typecheck` | vérification TypeScript des deux paquets |
 | `pnpm test` | tests du traitement d'image (backend) et de la fusion des photos du mur (frontend) |
+
+## Intégration continue (GitHub Actions)
+
+Workflow : [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (schéma dans [ARCHITECTURE.md](ARCHITECTURE.md#ci)).
+
+| Événement | Jobs |
+|---|---|
+| Push sur `dev` | `test` (`pnpm typecheck` + `pnpm test`), puis, s'il réussit, `publish` : construit les images de prod de l'API et du front et les pousse sur GHCR |
+| PR vers `main` | `test` seulement ; la fusion est bloquée tant qu'il échoue (règle de protection de `main`) |
+
+Images publiées (tags `dev` = dernier push sur `dev`, `sha-<commit>` = version figée, pour revenir en arrière) :
+
+```bash
+docker pull ghcr.io/simplon-dist-cda-260316/familyframe-jordan-api:dev
+docker pull ghcr.io/simplon-dist-cda-260316/familyframe-jordan-front:dev
+```
+
+L'image front appelle l'API sur `http://localhost:3000` (adresse inscrite au build) : elle sert à lancer l'app sur son propre PC.
 
 ## API
 
