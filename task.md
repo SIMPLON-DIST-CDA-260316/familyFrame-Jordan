@@ -41,12 +41,13 @@
 
 ## Partie 2 — FamilyFrame 2.0 : une famille, un cadre
 
-- [ ] T19 — Modèle `Frame` et migration des données
+- [x] T19 — Modèle `Frame` et migration des données
   - schéma `Frame` + `Photo.frameId`, index `[frameId, createdAt]`
+  - `lib/invite-code.ts` (`crypto.randomInt`) + test, nécessaire au cadre « Famille »
   - `prisma/migrate-frames.ts` idempotent, lancé par le service `migrate` après `db push`
   - vérifier : les photos existantes sont rattachées au cadre « Famille », relancer ne change rien
 - [ ] T20 — Sessions de cadre
-  - `lib/invite-code.ts` (`crypto.randomInt`), `lib/auth.ts` (`jose` + `cookie`), routes `/api/frames`, `/join`, `/current`
+  - `lib/auth.ts` (`jose` + `cookie`), routes `/api/frames`, `/join`, `/current`
   - CORS avec cookies (`Allow-Credentials`, `Allow-Headers`), `JWT_SECRET` dans `.env.example`, compose et CI
   - tests `node --test` : jeton valide / falsifié / expiré, format et normalisation du code
 - [ ] T21 — Photos filtrées par cadre
