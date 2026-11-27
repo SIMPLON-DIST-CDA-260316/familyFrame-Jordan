@@ -55,7 +55,7 @@ export default function SendPanel() {
     body.append('photo', file)
 
     try {
-      const response = await fetch(`${API_URL}/api/photos`, { method: 'POST', body })
+      const response = await fetch(`${API_URL}/api/photos`, { method: 'POST', body, credentials: 'include' })
       if (!response.ok) {
         const data: { error?: string } | null = await response.json().catch(() => null)
         throw new Error(data?.error ?? `Erreur du serveur (${response.status})`)

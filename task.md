@@ -54,7 +54,7 @@
   - middleware `requireFrame` sur `photosRouter`, `frameId` du jeton dans GET / POST / DELETE (`404` pour un autre cadre)
 - [x] T22 — Socket.IO par cadre
   - `io.use()` vérifie le cookie, `socket.join(frameId)`, `io.to(frameId).emit()`
-- [ ] T23 — Front
+- [x] T23 — Front
   - accueil créer / rejoindre, `/?code=` rejoint automatiquement, `credentials: 'include'`, `withCredentials: true`
   - QR code et code d'invitation affichés sur l'écran du cadre (`qrcode`)
 - [ ] T24 — Documentation : README, ARCHITECTURE (parcours d'une photo, sessions, rooms)

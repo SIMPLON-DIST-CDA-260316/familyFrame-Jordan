@@ -16,11 +16,11 @@ export function usePhotos() {
   const [arrivedId, setArrivedId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Sans API_URL : même origine que la page (proxy Vite)
-    const socket: Socket<ServerToClientEvents> = io(API_URL || undefined)
+    // Sans API_URL : même origine que la page (proxy Vite). withCredentials : le cookie de session est vérifié à la connexion
+    const socket: Socket<ServerToClientEvents> = io(API_URL || undefined, { withCredentials: true })
 
     const refresh = () =>
-      fetch(`${API_URL}/api/photos?limit=${WALL_SIZE}`)
+      fetch(`${API_URL}/api/photos?limit=${WALL_SIZE}`, { credentials: 'include' })
         .then((response) => (response.ok ? response.json() : []))
         .then((list: Photo[]) => setPhotos((current) => mergePhotos(current, list)))
         .catch(() => {}) // la reconnexion suivante réessaiera
