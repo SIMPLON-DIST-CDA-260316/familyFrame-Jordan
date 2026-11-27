@@ -60,7 +60,7 @@
 - [x] T23b — Gestion du cadre courant (UX, front uniquement)
   - pastille du cadre courant sur le mur → panneau « Mon cadre » : invitation (QR + code), lien vers le mode cadre, « Changer de cadre »
   - accueil avec « Annuler » quand on vient d'un cadre ; nom du cadre dans le panneau d'envoi
-- [ ] T24 — Documentation : README, ARCHITECTURE (parcours d'une photo, sessions, rooms)
+- [x] T24 — Documentation : README, ARCHITECTURE (parcours d'une photo, sessions, rooms)
 
 ## Règles
 
