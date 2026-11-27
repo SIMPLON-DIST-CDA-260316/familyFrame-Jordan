@@ -52,7 +52,7 @@
   - tests `node --test` : jeton valide / falsifié / expiré, format et normalisation du code
 - [x] T21 — Photos filtrées par cadre
   - middleware `requireFrame` sur `photosRouter`, `frameId` du jeton dans GET / POST / DELETE (`404` pour un autre cadre)
-- [ ] T22 — Socket.IO par cadre
+- [x] T22 — Socket.IO par cadre
   - `io.use()` vérifie le cookie, `socket.join(frameId)`, `io.to(frameId).emit()`
 - [ ] T23 — Front
   - accueil créer / rejoindre, `/?code=` rejoint automatiquement, `credentials: 'include'`, `withCredentials: true`

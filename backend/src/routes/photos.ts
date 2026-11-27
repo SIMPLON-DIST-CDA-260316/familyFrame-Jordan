@@ -57,7 +57,7 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
       throw error
     })
 
-  io.emit('photo:new', photo) // tous les cadres connectés l'affichent sans rechargement
+  io.to(photo.frameId).emit('photo:new', photo) // les écrans de ce cadre l'affichent sans rechargement
   res.status(201).json(photo)
 })
 
@@ -77,7 +77,7 @@ photosRouter.delete('/:id', async (req, res) => {
     console.error(`Suppression Cloudinary impossible pour ${photo.publicId}`, error),
   )
 
-  io.emit('photo:deleted', photo.id)
+  io.to(photo.frameId).emit('photo:deleted', photo.id)
   res.status(204).end()
 })
 
