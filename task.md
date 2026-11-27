@@ -39,6 +39,25 @@
   - bouton sur la photo principale + confirmation (`<dialog>`), absent en mode `?cadre`
   - suppression ouverte à tout visiteur (choix du POC, sans authentification)
 
+## Partie 2 — FamilyFrame 2.0 : une famille, un cadre
+
+- [ ] T19 — Modèle `Frame` et migration des données
+  - schéma `Frame` + `Photo.frameId`, index `[frameId, createdAt]`
+  - `prisma/migrate-frames.ts` idempotent, lancé par le service `migrate` après `db push`
+  - vérifier : les photos existantes sont rattachées au cadre « Famille », relancer ne change rien
+- [ ] T20 — Sessions de cadre
+  - `lib/invite-code.ts` (`crypto.randomInt`), `lib/auth.ts` (`jose` + `cookie`), routes `/api/frames`, `/join`, `/current`
+  - CORS avec cookies (`Allow-Credentials`, `Allow-Headers`), `JWT_SECRET` dans `.env.example`, compose et CI
+  - tests `node --test` : jeton valide / falsifié / expiré, format et normalisation du code
+- [ ] T21 — Photos filtrées par cadre
+  - middleware `requireFrame` sur `photosRouter`, `frameId` du jeton dans GET / POST / DELETE (`404` pour un autre cadre)
+- [ ] T22 — Socket.IO par cadre
+  - `io.use()` vérifie le cookie, `socket.join(frameId)`, `io.to(frameId).emit()`
+- [ ] T23 — Front
+  - accueil créer / rejoindre, `/?code=` rejoint automatiquement, `credentials: 'include'`, `withCredentials: true`
+  - QR code et code d'invitation affichés sur l'écran du cadre (`qrcode`)
+- [ ] T24 — Documentation : README, ARCHITECTURE (parcours d'une photo, sessions, rooms)
+
 ## Règles
 
 - Une tâche à la fois.
