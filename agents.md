@@ -39,6 +39,7 @@ Consulter la documentation à jour (MCP context7) avant d'utiliser une API d'une
 - Séparation simple des responsabilités
 - Pas de framework supplémentaire sans validation (ex. pas de React Router)
 - Sans session de cadre, le front affiche l'accueil (créer ou rejoindre un cadre) ; `/?code=XXXX` (lien du QR code) rejoint automatiquement.
+- Sur le mur, la pastille du cadre ouvre « Mon cadre » (invitation, mode cadre, changer de cadre). Le mode cadre n'a aucun contrôle (kiosque).
 - Front et API sur deux origines dans Docker (même site) : `fetch` avec `credentials: 'include'`, socket avec `withCredentials: true`.
 
 ## Règles de développement

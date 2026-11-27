@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import DeleteDialog from './DeleteDialog.tsx'
+import FrameMenu from './FrameMenu.tsx'
 import Invite from './Invite.tsx'
 import { seed, sized } from './photos.ts'
 import SendPanel from './SendPanel.tsx'
@@ -38,7 +39,12 @@ const frameMode = new URLSearchParams(window.location.search).has('cadre')
 
 type Focus = { id: string; arrivedId: string | null }
 
-export default function App({ frame }: { frame: Frame }) {
+type Props = {
+  frame: Frame
+  onChangeFrame: () => void
+}
+
+export default function App({ frame, onChangeFrame }: Props) {
   const { photos, connected, arrivedId } = usePhotos()
   const [focus, setFocus] = useState<Focus | null>(null)
   const [loadedId, setLoadedId] = useState<string | null>(null)
@@ -163,7 +169,8 @@ export default function App({ frame }: { frame: Frame }) {
       )}
 
       {frameMode && <Invite frame={frame} />}
-      {!frameMode && <SendPanel />}
+      {!frameMode && <FrameMenu frame={frame} onChangeFrame={onChangeFrame} />}
+      {!frameMode && <SendPanel frameName={frame.name} />}
       {!frameMode && <DeleteDialog photo={toDelete} onClose={() => setToDelete(null)} />}
     </main>
   )

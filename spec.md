@@ -9,7 +9,9 @@ Partie 2 : chaque famille a son propre cadre. Une photo n'est visible que par le
 
 ## Parcours utilisateur
 
-0. Créer un cadre (nom) sur l'écran de Mamie, ou le rejoindre en scannant son QR code / en saisissant son code d'invitation.
+0. Créer un cadre (nom), ou le rejoindre en scannant son QR code / en saisissant son code d'invitation.
+   Sur le mur, la pastille du cadre courant ouvre « Mon cadre » : inviter (QR + code), afficher en mode cadre (`/?cadre`), changer de cadre.
+   Mise en place type : le petit-fils crée le cadre sur son téléphone, saisit le code sur la tablette de Mamie puis touche « Afficher en mode cadre ».
 1. Saisir un pseudo.
 2. Sélectionner ou prendre une photo
    (`<input type="file" accept="image/*" capture>`).

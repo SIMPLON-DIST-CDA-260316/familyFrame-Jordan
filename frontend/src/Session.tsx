@@ -4,7 +4,8 @@ import App from './App.tsx'
 import Home from './Home.tsx'
 import type { Frame } from './types.ts'
 
-type State = { type: 'loading' } | { type: 'home'; error?: string } | { type: 'ready'; frame: Frame }
+// previous : cadre quitté via « Changer de cadre », pour pouvoir y revenir (Annuler)
+type State = { type: 'loading' } | { type: 'home'; error?: string; previous?: Frame } | { type: 'ready'; frame: Frame }
 
 const RETRY_DELAY = 3000
 
@@ -45,8 +46,21 @@ export default function Session() {
     }
   }, [])
 
-  if (state.type === 'ready') return <App key={state.frame.id} frame={state.frame} />
-  if (state.type === 'home') return <Home error={state.error} onReady={(frame) => setState({ type: 'ready', frame })} />
+  if (state.type === 'ready') {
+    const { frame } = state
+    return <App key={frame.id} frame={frame} onChangeFrame={() => setState({ type: 'home', previous: frame })} />
+  }
+  if (state.type === 'home') {
+    const { previous } = state
+    return (
+      <Home
+        error={state.error}
+        onReady={(frame) => setState({ type: 'ready', frame })}
+        // Le cookie n'a pas changé tant qu'on n'a ni rejoint ni créé de cadre : on revient simplement au précédent
+        onCancel={previous && (() => setState({ type: 'ready', frame: previous }))}
+      />
+    )
+  }
   return (
     <main className="wall">
       <p className="offline" role="status">

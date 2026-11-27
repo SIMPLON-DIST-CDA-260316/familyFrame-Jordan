@@ -5,10 +5,11 @@ import type { Frame } from './types.ts'
 type Props = {
   error?: string // erreur du lien d'invitation (code inconnu)
   onReady: (frame: Frame) => void
+  onCancel?: () => void // présent quand on vient d'un cadre (« Changer de cadre »)
 }
 
 /** Accueil sans session : rejoindre un cadre avec son code, ou en créer un (écran de Mamie). */
-export default function Home({ error: linkError, onReady }: Props) {
+export default function Home({ error: linkError, onReady, onCancel }: Props) {
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
@@ -32,8 +33,15 @@ export default function Home({ error: linkError, onReady }: Props) {
     <main className="wall">
       <section className="send-panel home" aria-labelledby="home-title">
         <div className="send-inner">
-          <h2 id="home-title">FamilyFrame</h2>
-          <p className="hint">Le cadre photo partagé de toute la famille.</p>
+          {onCancel && (
+            <button type="button" className="close" onClick={onCancel} disabled={busy} aria-label="Annuler et revenir au cadre">
+              ×
+            </button>
+          )}
+          <h2 id="home-title">{onCancel ? 'Changer de cadre' : 'FamilyFrame'}</h2>
+          <p className="hint">
+            {onCancel ? 'Rejoignez un autre cadre ou créez-en un nouveau.' : 'Le cadre photo partagé de toute la famille.'}
+          </p>
 
           <form onSubmit={(event) => submit(event, '/api/frames/join', { code })}>
             <label className="field">
