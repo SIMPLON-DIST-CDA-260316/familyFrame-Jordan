@@ -1,5 +1,6 @@
 import { Router, type ErrorRequestHandler } from 'express'
 import multer from 'multer'
+import { requireFrame } from '../lib/auth.ts'
 import { deleteImage, uploadImage } from '../lib/cloudinary.ts'
 import { httpError } from '../lib/http-error.ts'
 import { processImage } from '../lib/image.ts'
@@ -20,13 +21,19 @@ const upload = multer({
 })
 
 export const photosRouter = Router()
+// Avant Multer : une requête sans session est refusée sans lire le fichier. Chaque route ne voit que le cadre du jeton.
+photosRouter.use(requireFrame)
 
 photosRouter.get('/', async (req, res) => {
   const limit = Number(req.query.limit ?? 20)
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
     throw httpError(400, 'Le paramètre limit doit être un entier entre 1 et 100.')
   }
-  const photos = await prisma.photo.findMany({ orderBy: { createdAt: 'desc' }, take: limit })
+  const photos = await prisma.photo.findMany({
+    where: { frameId: res.locals.frameId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  })
   res.json(photos)
 })
 
@@ -41,7 +48,7 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
   const uploaded = await uploadImage(image)
 
   const photo = await prisma.photo
-    .create({ data: { url: uploaded.secure_url, publicId: uploaded.public_id, pseudo } })
+    .create({ data: { url: uploaded.secure_url, publicId: uploaded.public_id, pseudo, frameId: res.locals.frameId } })
     .catch(async (error) => {
       // Pas d'image orpheline sur Cloudinary si la base refuse l'enregistrement
       await deleteImage(uploaded.public_id).catch((cleanupError) =>
@@ -54,13 +61,14 @@ photosRouter.post('/', upload.single('photo'), async (req, res) => {
   res.status(201).json(photo)
 })
 
-// shortcut: aucune protection, tout visiteur peut supprimer (choix du POC) ; ajouter un jeton d'expéditeur avant toute mise en ligne.
+// Tout membre du cadre peut supprimer ses photos (choix de la spec)
 photosRouter.delete('/:id', async (req, res) => {
   const { id } = req.params
   if (!/^[a-f\d]{24}$/i.test(id)) throw httpError(400, 'Identifiant de photo invalide.')
 
-  const photo = await prisma.photo.delete({ where: { id } }).catch((error) => {
-    if (error?.code === 'P2025') throw httpError(404, 'Photo introuvable.') // P2025 : enregistrement inexistant
+  const photo = await prisma.photo.delete({ where: { id, frameId: res.locals.frameId } }).catch((error) => {
+    // P2025 : aucune photo avec cet id dans ce cadre ; celle d'un autre cadre est traitée comme inexistante
+    if (error?.code === 'P2025') throw httpError(404, 'Photo introuvable.')
     throw error
   })
 

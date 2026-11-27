@@ -50,7 +50,7 @@
   - `lib/auth.ts` (`jose` + `cookie`), routes `/api/frames`, `/join`, `/current`
   - CORS avec cookies (`Allow-Credentials`, `Allow-Headers`), `JWT_SECRET` dans `.env.example` (lu par compose via `env_file` ; la CI n'en a pas besoin, le test fixe le sien)
   - tests `node --test` : jeton valide / falsifié / expiré, format et normalisation du code
-- [ ] T21 — Photos filtrées par cadre
+- [x] T21 — Photos filtrées par cadre
   - middleware `requireFrame` sur `photosRouter`, `frameId` du jeton dans GET / POST / DELETE (`404` pour un autre cadre)
 - [ ] T22 — Socket.IO par cadre
   - `io.use()` vérifie le cookie, `socket.join(frameId)`, `io.to(frameId).emit()`
