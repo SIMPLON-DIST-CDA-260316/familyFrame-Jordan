@@ -6,3 +6,6 @@ const LENGTH = 10
 
 /** Code d'invitation d'un cadre, tiré avec le générateur aléatoire cryptographique de Node. */
 export const createInviteCode = () => Array.from({ length: LENGTH }, () => ALPHABET[randomInt(ALPHABET.length)]).join('')
+
+/** Code saisi à la main : casse, espaces et tirets ignorés. */
+export const normalizeInviteCode = (input: string) => input.toUpperCase().replace(/[\s-]/g, '')

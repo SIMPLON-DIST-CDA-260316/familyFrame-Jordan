@@ -1,6 +1,7 @@
 import { createServer } from 'node:http'
 import express, { type ErrorRequestHandler } from 'express'
 import { io } from './lib/socket.ts'
+import { framesRouter } from './routes/frames.ts'
 import { photosRouter } from './routes/photos.ts'
 
 const port = Number(process.env.PORT ?? 3000)
@@ -12,13 +13,15 @@ app.disable('x-powered-by')
 const corsOrigin = process.env.CORS_ORIGIN
 if (corsOrigin) {
   app.use((req, res, next) => {
-    res.set('Access-Control-Allow-Origin', corsOrigin)
+    // Allow-Credentials : le navigateur envoie et accepte le cookie de session malgré l'origine différente
+    res.set({ 'Access-Control-Allow-Origin': corsOrigin, 'Access-Control-Allow-Credentials': 'true' })
     if (req.method !== 'OPTIONS') return next()
-    // Requête préalable du navigateur (DELETE n'est pas une requête « simple »)
-    res.set('Access-Control-Allow-Methods', 'GET, POST, DELETE').sendStatus(204)
+    // Requête préalable du navigateur (DELETE et JSON ne sont pas des requêtes « simples »)
+    res.set({ 'Access-Control-Allow-Methods': 'GET, POST, DELETE', 'Access-Control-Allow-Headers': 'Content-Type' }).sendStatus(204)
   })
 }
 
+app.use('/api/frames', framesRouter)
 app.use('/api/photos', photosRouter)
 
 app.use((_req, res) => {

@@ -46,9 +46,9 @@
   - `lib/invite-code.ts` (`crypto.randomInt`) + test, nécessaire au cadre « Famille »
   - `prisma/migrate-frames.ts` idempotent, lancé par le service `migrate` après `db push`
   - vérifier : les photos existantes sont rattachées au cadre « Famille », relancer ne change rien
-- [ ] T20 — Sessions de cadre
+- [x] T20 — Sessions de cadre
   - `lib/auth.ts` (`jose` + `cookie`), routes `/api/frames`, `/join`, `/current`
-  - CORS avec cookies (`Allow-Credentials`, `Allow-Headers`), `JWT_SECRET` dans `.env.example`, compose et CI
+  - CORS avec cookies (`Allow-Credentials`, `Allow-Headers`), `JWT_SECRET` dans `.env.example` (lu par compose via `env_file` ; la CI n'en a pas besoin, le test fixe le sien)
   - tests `node --test` : jeton valide / falsifié / expiré, format et normalisation du code
 - [ ] T21 — Photos filtrées par cadre
   - middleware `requireFrame` sur `photosRouter`, `frameId` du jeton dans GET / POST / DELETE (`404` pour un autre cadre)
