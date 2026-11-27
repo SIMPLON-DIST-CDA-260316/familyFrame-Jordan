@@ -28,7 +28,7 @@ export default function DeleteDialog({ photo, onClose }: Props) {
     setDeleting(true)
     setError(null)
     try {
-      const response = await fetch(`${API_URL}/api/photos/${photo.id}`, { method: 'DELETE' })
+      const response = await fetch(`${API_URL}/api/photos/${photo.id}`, { method: 'DELETE', credentials: 'include' })
       // 404 : déjà supprimée depuis un autre écran, le résultat est le même
       if (!response.ok && response.status !== 404) {
         const data: { error?: string } | null = await response.json().catch(() => null)

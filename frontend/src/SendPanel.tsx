@@ -8,7 +8,7 @@ type Status =
   | { type: 'error'; message: string }
 
 /** Bouton flottant + panneau d'envoi (<dialog> natif : focus, Échap et accessibilité gérés par le navigateur). */
-export default function SendPanel() {
+export default function SendPanel({ frameName }: { frameName: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [pseudo, setPseudo] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -55,7 +55,7 @@ export default function SendPanel() {
     body.append('photo', file)
 
     try {
-      const response = await fetch(`${API_URL}/api/photos`, { method: 'POST', body })
+      const response = await fetch(`${API_URL}/api/photos`, { method: 'POST', body, credentials: 'include' })
       if (!response.ok) {
         const data: { error?: string } | null = await response.json().catch(() => null)
         throw new Error(data?.error ?? `Erreur du serveur (${response.status})`)
@@ -90,7 +90,9 @@ export default function SendPanel() {
             ×
           </button>
           <h2 id="send-title">Envoyer une photo</h2>
-          <p className="hint">Elle apparaîtra aussitôt sur le cadre.</p>
+          <p className="hint">
+            Elle apparaîtra aussitôt sur le cadre <strong>{frameName}</strong>.
+          </p>
 
           <form onSubmit={handleSubmit}>
             <label className="field">

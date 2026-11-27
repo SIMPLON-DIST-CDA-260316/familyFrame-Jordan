@@ -8,6 +8,8 @@ Développer un POC de cadre photo connecté en 7 heures.
 L'objectif principal de la semaine est Docker.
 Ne pas complexifier inutilement le POC.
 
+Partie 2 (FamilyFrame 2.0) : plusieurs cadres, chacun rejoint par un code d'invitation (voir spec.md). Faire évoluer l'application existante, pas la reconstruire.
+
 ## Stack imposée
 
 - pnpm (workspace) — Node.js 26
@@ -18,6 +20,7 @@ Ne pas complexifier inutilement le POC.
 - Multer 2 + Sharp
 - Cloudinary (SDK v2)
 - TypeScript
+- Partie 2 : `jose` (JWT), `cookie` (lecture de l'en-tête Cookie), `qrcode` (front)
 
 Consulter la documentation à jour (MCP context7) avant d'utiliser une API d'une de ces librairies.
 
@@ -35,6 +38,9 @@ Consulter la documentation à jour (MCP context7) avant d'utiliser une API d'une
 - En local, le proxy Vite redirige `/api` et `/socket.io` vers le backend (même origine, pas de CORS).
 - Séparation simple des responsabilités
 - Pas de framework supplémentaire sans validation (ex. pas de React Router)
+- Sans session de cadre, le front affiche l'accueil (créer ou rejoindre un cadre) ; `/?code=XXXX` (lien du QR code) rejoint automatiquement.
+- Sur le mur, la pastille du cadre ouvre « Mon cadre » (invitation, mode cadre, changer de cadre). Le mode cadre n'a aucun contrôle (kiosque).
+- Front et API sur deux origines dans Docker (même site) : `fetch` avec `credentials: 'include'`, socket avec `withCredentials: true`.
 
 ## Règles de développement
 
@@ -60,7 +66,12 @@ Consulter la documentation à jour (MCP context7) avant d'utiliser une API d'une
 - Limiter la taille des uploads.
 - Ne jamais exposer les identifiants Cloudinary (configuration par `CLOUDINARY_URL` côté backend uniquement).
 - Si l'enregistrement MongoDB échoue après l'upload, supprimer l'image Cloudinary (pas d'orphelin).
-- Erreurs renvoyées en JSON `{ error }` avec le bon statut (400, 413, 415, 500), sans détail interne.
+- Erreurs renvoyées en JSON `{ error }` avec le bon statut (400, 401, 404, 413, 415, 500), sans détail interne.
+- Session de cadre : JWT HS256 (`jose`, `algorithms: ['HS256']` imposé à la vérification) `{ sub: frameId }`, valable 1 an, dans un cookie `HttpOnly`, `SameSite=Lax`.
+- Le `frameId` vient toujours du jeton, jamais de la requête : `res.locals.frameId` côté Express, `socket.data.frameId` côté Socket.IO.
+- Code d'invitation : 10 caractères tirés avec `crypto.randomInt` (alphabet sans caractères ambigus), vérifié côté serveur, saisie normalisée (casse, espaces, tirets ignorés).
+- Une photo d'un autre cadre répond `404`, comme une photo inexistante.
+- `JWT_SECRET` dans `backend/.env` uniquement (jamais dans le front ni dans git).
 
 ## Validation
 
@@ -75,6 +86,6 @@ Après chaque tâche :
 ## Interdictions
 
 - Pas de Docker le premier jour.
-- Pas d'authentification.
+- Pas de comptes utilisateurs ni de mots de passe : l'accès se fait par code d'invitation de cadre.
 - Pas de fonctionnalités bonus.
 - Pas de sur-ingénierie.
