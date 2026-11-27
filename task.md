@@ -39,6 +39,29 @@
   - bouton sur la photo principale + confirmation (`<dialog>`), absent en mode `?cadre`
   - suppression ouverte à tout visiteur (choix du POC, sans authentification)
 
+## Partie 2 — FamilyFrame 2.0 : une famille, un cadre
+
+- [x] T19 — Modèle `Frame` et migration des données
+  - schéma `Frame` + `Photo.frameId`, index `[frameId, createdAt]`
+  - `lib/invite-code.ts` (`crypto.randomInt`) + test, nécessaire au cadre « Famille »
+  - `prisma/migrate-frames.ts` idempotent, lancé par le service `migrate` après `db push`
+  - vérifier : les photos existantes sont rattachées au cadre « Famille », relancer ne change rien
+- [x] T20 — Sessions de cadre
+  - `lib/auth.ts` (`jose` + `cookie`), routes `/api/frames`, `/join`, `/current`
+  - CORS avec cookies (`Allow-Credentials`, `Allow-Headers`), `JWT_SECRET` dans `.env.example` (lu par compose via `env_file` ; la CI n'en a pas besoin, le test fixe le sien)
+  - tests `node --test` : jeton valide / falsifié / expiré, format et normalisation du code
+- [x] T21 — Photos filtrées par cadre
+  - middleware `requireFrame` sur `photosRouter`, `frameId` du jeton dans GET / POST / DELETE (`404` pour un autre cadre)
+- [x] T22 — Socket.IO par cadre
+  - `io.use()` vérifie le cookie, `socket.join(frameId)`, `io.to(frameId).emit()`
+- [x] T23 — Front
+  - accueil créer / rejoindre, `/?code=` rejoint automatiquement, `credentials: 'include'`, `withCredentials: true`
+  - QR code et code d'invitation affichés sur l'écran du cadre (`qrcode`)
+- [x] T23b — Gestion du cadre courant (UX, front uniquement)
+  - pastille du cadre courant sur le mur → panneau « Mon cadre » : invitation (QR + code), lien vers le mode cadre, « Changer de cadre »
+  - accueil avec « Annuler » quand on vient d'un cadre ; nom du cadre dans le panneau d'envoi
+- [x] T24 — Documentation : README, ARCHITECTURE (parcours d'une photo, sessions, rooms)
+
 ## Règles
 
 - Une tâche à la fois.

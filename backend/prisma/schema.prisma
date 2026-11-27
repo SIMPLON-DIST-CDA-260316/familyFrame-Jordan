@@ -7,12 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Frame {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  inviteCode String   @unique
+  createdAt  DateTime @default(now())
+  photos     Photo[]
+}
+
 model Photo {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   url       String
   publicId  String   @unique
   pseudo    String
   createdAt DateTime @default(now())
+  frameId   String   @db.ObjectId
+  frame     Frame    @relation(fields: [frameId], references: [id])
 
-  @@index([createdAt(sort: Desc)])
+  // Requête du mur : les photos d'un cadre, plus récentes d'abord
+  @@index([frameId, createdAt(sort: Desc)])
 }

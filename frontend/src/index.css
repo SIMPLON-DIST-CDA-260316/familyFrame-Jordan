@@ -506,6 +506,115 @@ form {
   color: var(--red);
 }
 
+/* ---------- Accueil : créer ou rejoindre un cadre ---------- */
+
+.home {
+  position: relative;
+  z-index: 1;
+  margin: max(1rem, 10vh) auto 1rem;
+  overflow-y: auto;
+}
+
+.or {
+  margin: 1rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------- Cadre courant : pastille + panneau « Mon cadre » ---------- */
+
+.frame-chip {
+  position: fixed;
+  top: 4rem;
+  left: 1rem;
+  z-index: 3;
+  max-width: calc(100% - 2rem);
+  overflow: hidden;
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.45);
+}
+
+.frame-chip:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.menu-actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.menu-actions a.button {
+  text-decoration: none;
+}
+
+/* Dans le panneau, l'invitation n'est plus une carte flottante */
+.send-panel .invite {
+  position: static;
+  max-width: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Le nom du cadre est déjà le titre du panneau */
+.send-panel .invite strong {
+  display: none;
+}
+
+/* ---------- Invitation sur l'écran du cadre ---------- */
+
+.invite {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 22rem;
+  padding: 0.6rem 0.9rem 0.6rem 0.6rem;
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.45);
+}
+
+.invite img {
+  width: 6.5rem;
+  height: 6.5rem;
+}
+
+.invite p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.invite strong {
+  display: block;
+  font-family: var(--hand);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  color: var(--red);
+}
+
+.invite code {
+  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
 /* ---------- Animations ---------- */
 
 @keyframes sway {
